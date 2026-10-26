@@ -22,3 +22,5 @@ CASCADE v0.1.0 is evaluated against its warehouse, analytical, forecasting, simu
 | Complete public release | Public source/tag/release, deployed public app, CI, clean-clone quickstart, public URL checks | Verified: public app and source; fresh pinned-runtime CI; versioned source and bundled real-data release |
 
 Independent source, SQL and simulation review identified boundary, aircraft-readiness and source-consistency defects. Fixes and regression tests preceded publication. See `reports/REVIEW.md` and `RELEASE.md` for the verified scope and public release evidence.
+
+The subsequent interface refresh retains the same scientific export and source links. Its desktop/mobile, missing-rate, keyboard-focus, cutoff/outcome and scenario checks are documented in `docs/DESIGN.md`; current renders are in `docs/images`. Original v0.1.0 scientific evidence remains versioned.

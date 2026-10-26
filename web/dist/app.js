@@ -57,7 +57,7 @@ function initialize(data) {
   link('scenarioSource', meta.scenario_url || `${repo}/blob/main/reports/scenarios.json`);
   renderFindings(); renderModels(); renderProvenance(); bindEvents();
   $('loadMessage').hidden = true; $('app').hidden = false; render();
-  if(location.hash){const anchor=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(anchor)anchor.scrollIntoView({block:'start',behavior:'instant'});}
+  if(location.hash){const initialHash=location.hash;const anchor=document.getElementById(decodeURIComponent(initialHash.slice(1)));const align=()=>{if(anchor&&location.hash===initialHash)anchor.scrollIntoView({block:'start',behavior:'instant'});};if(document.fonts?.ready)document.fonts.ready.then(align);else align();}
 }
 function selectInitialFrame(preferred) {
   const frames = day().frames;
@@ -93,19 +93,17 @@ function render() {
   renderMap(); renderTimeline(); renderAirport(); renderScenarios(); updateQuery();
 }
 const project = (lon, lat) => [65 + (lon + 126) / 58 * 770, 365 - (lat - 25) / 24 * 300];
-const polyline = coords => coords.map(([lon, lat], index) => `${index ? 'L' : 'M'}${project(lon, lat).join(',')}`).join(' ');
 function renderMap() {
   const svg = $('networkMap'); svg.replaceChildren();
   const defs = svgElement('defs');
-  const marker = svgElement('marker', { id: 'routeArrow', markerWidth: 5, markerHeight: 5, refX: 4, refY: 2.5, orient: 'auto', markerUnits: 'strokeWidth' });
-  marker.append(svgElement('path', { d: 'M0,0 L5,2.5 L0,5', fill: 'none', stroke: '#c0b58e', 'stroke-width': .8 })); defs.append(marker); svg.append(defs);
+  const glow = svgElement('filter', { id: 'edgeGlow', x: '-30%', y: '-30%', width: '160%', height: '160%' });
+  glow.append(svgElement('feGaussianBlur', { stdDeviation: '0.8', result: 'blur' }));
+  const merge = svgElement('feMerge'); merge.append(svgElement('feMergeNode', { in: 'blur' }), svgElement('feMergeNode', { in: 'SourceGraphic' })); glow.append(merge); defs.append(glow);
+  svg.append(defs);
   const grid = svgElement('g', { class: 'map-grid' });
   for (let longitude = -125; longitude < -65; longitude += 10) { const a = project(longitude, 25), b = project(longitude, 49); grid.append(svgElement('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1] })); }
   for (let latitude = 25; latitude < 50; latitude += 5) { const a = project(-126, latitude), b = project(-68, latitude); grid.append(svgElement('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1] })); } svg.append(grid);
-  const outline = [[-124.7,48.4],[-123.0,48.1],[-122.8,49],[-95.2,49],[-95,48.8],[-89.8,47.9],[-87,47],[-85,45.8],[-83,45.9],[-82.5,42],[-80,41.8],[-79,43],[-76.8,43.5],[-74.7,45],[-71.5,45],[-69.2,47.3],[-67,47],[-67.1,44.7],[-70.1,43.7],[-70.8,42],[-73.8,40.7],[-74.6,39.2],[-75.5,38.5],[-76,36.5],[-75.5,35.3],[-77.8,33.9],[-80.5,32.1],[-81,30.8],[-80.1,26],[-81.1,25.2],[-82,26.8],[-82.7,28.9],[-84,30.1],[-87.4,30.3],[-90,29.3],[-92.4,29.6],[-95.3,28.9],[-97.2,26.1],[-99.4,27],[-101.2,29.3],[-103,29.1],[-104.5,29.7],[-106.5,31.8],[-108.2,31.3],[-111.1,31.3],[-114.7,32.7],[-117.1,32.5],[-119.7,34.5],[-121.8,36.6],[-123,38.4],[-124.4,40.5],[-124.1,42],[-124.7,46],[-124.7,48.4]];
-  svg.append(svgElement('path', { d: `${polyline(outline)} Z`, class: 'map-outline' }));
-  const states = [[[ -120,42],[-120,39],[-114.7,35]], [[-117,46],[-117,42],[-114,42],[-114,37],[-109,37],[-109,31.4]], [[-124.1,42],[-111,42],[-111,49]], [[-114,37],[-109,37],[-109,49]], [[-109,41],[-102,41],[-102,37],[-109,37]], [[-109,45],[-104,45],[-104,49]], [[-103,49],[-103,46],[-96.5,46]], [[-104,43],[-98,43],[-96,42.5]], [[-102,41],[-95.3,41]], [[-102,37],[-94.6,37]], [[-103,36.5],[-100,36.5],[-100,34.6],[-94.5,33.6]], [[-94.6,36.5],[-94.6,33],[-94,33],[-94,29.5]], [[-94.6,40.5],[-91.5,40.5],[-90.2,38.9],[-89.2,36.5]], [[-90.2,47],[-92.8,46],[-92.8,43.5],[-91.2,43.5],[-91,40.5]], [[-91.2,43.5],[-87,43.5]], [[-87.5,42.5],[-87.5,38],[-88,36.5]], [[-89.2,36.5],[-82,36.5]], [[-85,35],[-85,31],[-87.5,31]], [[-89.5,35],[-89.5,30.2]], [[-85,35],[-81,35],[-79,34.7]], [[-84.8,41.8],[-84.8,38.5],[-82,38.5]], [[-80.5,40.6],[-80.5,42.3]], [[-75,42],[-79.8,42]], [[-73.3,45],[-73.3,42.8],[-71.2,42.8]]];
-  const borders = svgElement('g', { class: 'map-state' }); states.forEach(points => borders.append(svgElement('path', { d: polyline(points) }))); svg.append(borders);
+  svg.append(svgElement('image', { href: 'assets/us-states.svg', x: 0, y: 0, width: 900, height: 445, opacity: '.9', 'aria-hidden': 'true' }));
   svg.append(svgElement('text', { x: 70, y: 336, class: 'map-waterlabel', transform: 'rotate(-68 70 336)' }, 'PACIFIC'));
   svg.append(svgElement('text', { x: 768, y: 272, class: 'map-waterlabel', transform: 'rotate(-55 768 272)' }, 'ATLANTIC'));
   const metadata = Object.fromEntries(airports().map(item => [item.airport, item]));
@@ -128,7 +126,7 @@ function renderMap() {
   for (const airport of airports()) {
     if (number(airport.lon) === null || number(airport.lat) === null) continue;
     const [x, y] = project(Number(airport.lon), Number(airport.lat)), row = rows().find(item => item.airport === airport.airport), value = rate(row), n = scheduled(row);
-    const radius = 6 + Math.min(5, Math.sqrt(n || 0) * .7);
+    const radius = 7 + Math.min(7, Math.sqrt(n || 0) * .9);
     const g = svgElement('g', { class: `airport-node${state.airport === airport.airport ? ' selected' : ''}`, transform: `translate(${x},${y})`, role: 'button', tabindex: '0', 'aria-label': `${airport.airport}, ${airport.name}. ${state.mode === 'forecast' ? 'Forecast' : 'Final'} disruption ${pct(value)}. Select airport.`, 'aria-pressed': String(state.airport === airport.airport) });
     g.append(svgElement('circle', { r: 25, class: 'hit-area' }));
     g.append(svgElement('circle', { r: radius + 9, class: 'outer', stroke: color(value) }));
@@ -144,7 +142,14 @@ function renderMap() {
     svg.append(g);
   }
 }
-function selectAirport(code) { state.airport = code; renderMap(); renderAirport(); updateQuery(); setText('announcement', `${code} selected. ${state.mode === 'forecast' ? 'Forecast' : 'Final'} disruption ${pct(rate(selectedRow()))}.`); }
+function selectAirport(code) {
+  const active = document.activeElement;
+  const focusedMap = active?.classList.contains('airport-node'), focusedList = active?.classList.contains('airport-row');
+  state.airport = code; renderMap(); renderAirport(); updateQuery();
+  if (focusedMap) $('networkMap').querySelector('.airport-node.selected')?.focus({ preventScroll: true });
+  else if (focusedList) $('airportList').querySelector('.airport-row.selected')?.focus({ preventScroll: true });
+  setText('announcement', `${code} selected. ${state.mode === 'forecast' ? 'Forecast' : 'Final'} disruption ${pct(rate(selectedRow()))}.`);
+}
 function renderTimeline() {
   const svg = $('timeline'); svg.replaceChildren();
   const compact=window.matchMedia('(max-width:650px)').matches;
@@ -154,6 +159,13 @@ function renderTimeline() {
   const allValues = frames.flatMap((item,index) => state.mode==='forecast' ? (index<=state.frame ? [weightedRate(item.airports || [], 'prediction')] : []) : [weightedRate(item.airports || [], 'prediction'),weightedRate(item.airports || [], 'target_rate')]).filter(value=>value!==null);
   const ceiling = Math.max(.4, Math.min(1, Math.ceil(Math.max(0, ...allValues) * 5) / 5));
   const y = value => bottom - Math.min(ceiling, Math.max(0, value)) / ceiling * (bottom - top);
+  const defs = svgElement('defs'), gradient = svgElement('linearGradient', { id: 'timelineFill', x1: '0%', y1: '0%', x2: '0%', y2: '100%' });
+  gradient.append(svgElement('stop', { offset: '0%', 'stop-color': '#43886b', 'stop-opacity': '.24' }), svgElement('stop', { offset: '100%', 'stop-color': '#43886b', 'stop-opacity': '.01' })); defs.append(gradient); svg.append(defs);
+  const cutoffX = x(state.frame);
+  if (state.mode === 'forecast' && state.frame < frames.length - 1) {
+    svg.append(svgElement('rect', { x: cutoffX, y: top, width: width-right-cutoffX, height: bottom-top, class: 'chart-future' }));
+    if (width-right-cutoffX > (compact ? 65 : 110)) svg.append(svgElement('text', { x: (cutoffX+width-right)/2, y: top+16, 'text-anchor': 'middle', class: 'chart-future-label' }, 'AFTER CUTOFF'));
+  }
   for (let tick = 0; tick <= 4; tick++) { const value = ceiling * tick / 4, yy = y(value); svg.append(svgElement('line', { x1: left, x2: width - right, y1: yy, y2: yy, class: 'chart-grid' })); svg.append(svgElement('text', { x: left - 8, y: yy + 3, 'text-anchor': 'end', class: 'chart-axis' }, `${Math.round(value * 100)}%`)); }
   const tickStep = Math.max(1, Math.ceil(frames.length / 7));
   for (let index = 0; index < frames.length; index += tickStep) svg.append(svgElement('text', { x: x(index), y: 134, 'text-anchor': 'middle', class: 'chart-axis' }, clock(frames[index].cutoff)));
@@ -162,6 +174,11 @@ function renderTimeline() {
   for (const [key, stroke, dashed] of (state.mode==='forecast' ? [['prediction','#2b776c',false]] : [['target_rate', '#bc9970', true], ['prediction', '#2b776c', false]])) {
     let path = '', drawing = false;
     frames.forEach((item, index) => { const value = state.mode==='forecast' && index>state.frame ? null : weightedRate(item.airports || [], key); if (value === null) { drawing = false; return; } path += `${drawing ? 'L' : 'M'}${x(index)},${y(value)} `; drawing = true; });
+    if (key === 'prediction') {
+      let points = [];
+      const flush = () => { if (points.length > 1) { const area = `M${points[0][0]},${bottom} ` + points.map(([xx, yy]) => `L${xx},${yy}`).join(' ') + ` L${points[points.length-1][0]},${bottom} Z`; svg.append(svgElement('path', { d: area, class: 'chart-area' })); } points = []; };
+      frames.forEach((item,index) => { const v = state.mode === 'forecast' && index > state.frame ? null : weightedRate(item.airports || [], key); if (v === null) flush(); else points.push([x(index),y(v)]); }); flush();
+    }
     svg.append(svgElement('path', { d: path, fill: 'none', stroke, 'stroke-width': dashed ? 1.7 : 2.2, ...(dashed ? { 'stroke-dasharray': '5 5' } : {}), 'stroke-linejoin': 'round' }));
   }
   const currentX = x(state.frame); svg.append(svgElement('line', { x1: currentX, x2: currentX, y1: 2, y2: bottom + 5, class: 'chart-cutoff' }));
@@ -173,9 +190,10 @@ function renderAirport() {
   const airport = selectedAirport(), row = selectedRow(); if (!airport) return;
   setText('airportTitle', airport.airport); setText('airportName', airport.name); setText('airportTimezone', airport.timezone || 'UTC DISPLAY');
   const value = rate(row), n = scheduled(row), observed = number(row?.observed_rate ?? row?.lag_rate_2h);
-  $('airportDetail').innerHTML = `<div class="airport-detail"><strong class="airport-rate" style="color:${color(value)}">${escapeHtml(pct(value))}</strong><div class="airport-detail-info"><strong>${state.mode === 'forecast' ? 'Forecast next 2h' : 'Final outcome next 2h'}</strong>${escapeHtml(fmt(n))} scheduled departures<span class="detail-secondary">Recent observed: ${escapeHtml(pct(observed))}</span></div></div>`;
+  const gaugePct = value === null ? 0 : Math.max(0, Math.min(100, value * 100));
+  $('airportDetail').innerHTML = `<div class="airport-detail"><div class="airport-gauge${value === null ? ' missing' : ''}" role="img" aria-label="${value === null ? 'Disruption rate unavailable' : escapeHtml(pct(value)) + (state.mode === 'forecast' ? ' forecast disruption' : ' final disruption')}" style="--gauge-color:${color(value)};--gauge-pct:${gaugePct}%"><strong class="airport-rate">${escapeHtml(pct(value))}</strong></div><div class="airport-detail-info"><strong>${value === null ? (state.mode === 'forecast' ? 'No forecast available' : 'No final outcome available') : (state.mode === 'forecast' ? 'Forecast next 2h' : 'Final outcome next 2h')}</strong>${escapeHtml(fmt(n))} scheduled departures<span class="detail-secondary">Recent observed: ${escapeHtml(pct(observed))}</span></div></div>`;
   const ranked = airports().map(meta => ({ meta, row: rows().find(item => item.airport === meta.airport) })).sort((a, b) => (rate(b.row) ?? -1) - (rate(a.row) ?? -1));
-  $('airportList').innerHTML = ranked.map(({ meta, row: item }) => { const r = rate(item); return `<button class="airport-row${meta.airport === state.airport ? ' selected' : ''}" type="button" data-airport="${escapeHtml(meta.airport)}" aria-pressed="${meta.airport === state.airport}" aria-label="${escapeHtml(meta.airport)} ${escapeHtml(pct(r))} disruption"><span class="airport-code">${escapeHtml(meta.airport)}</span><span class="airport-bar"><i style="width:${Math.max(0, Math.min(100, (r || 0) * 100))}%;background:${color(r)}"></i></span><span class="airport-row-value">${escapeHtml(pct(r))}</span></button>`; }).join('');
+  $('airportList').innerHTML = ranked.map(({ meta, row: item }) => { const r = rate(item); return `<button class="airport-row${meta.airport === state.airport ? ' selected' : ''}" type="button" data-airport="${escapeHtml(meta.airport)}" aria-pressed="${meta.airport === state.airport}" aria-label="${escapeHtml(meta.airport)} ${escapeHtml(pct(r))} disruption"><span class="airport-code">${escapeHtml(meta.airport)}</span><span class="airport-bar"><i style="width:${Math.max(0, Math.min(100, (r || 0) * 100))}%;background:${color(r)}"></i></span><span class="airport-row-value">${escapeHtml(pct(r))}</span><span class="airport-row-arrow" aria-hidden="true">↗</span></button>`; }).join('');
   $('airportList').querySelectorAll('button').forEach(button => button.addEventListener('click', () => selectAirport(button.dataset.airport)));
   const weather = row?.weather || row || {}, age = number(weather.age_min ?? weather.weather_age_min), temp = number(weather.temp_c), wind = number(weather.wind_ms), visibility = number(weather.visibility_m);
   $('weatherDetail').innerHTML = `<span class="tiny-label">LAST AVAILABLE WEATHER</span><div class="weather-grid"><div><strong>${temp === null ? '—' : `${fmt(temp, 1)}°C`}</strong><span>Temperature</span></div><div><strong>${wind === null ? '—' : `${fmt(wind, 1)} m/s`}</strong><span>Wind speed</span></div><div><strong>${visibility === null ? '—' : `${fmt(visibility / 1000, 1)} km`}</strong><span>Visibility</span></div></div><p class="weather-age">${age === null ? 'No eligible observation supplied for this cutoff.' : `Observation ${fmt(age)} min before cutoff; eligibility includes declared reporting latency.`}</p>`;
@@ -200,7 +218,7 @@ function renderScenarios() {
     setText('benefitStat', '—'); setText('benefitPercent', 'No evaluated scenario'); $('scenarioBars').innerHTML = ''; $('scenarioTable').innerHTML = '<tr><td colspan="3">No scenario exported for this day.</td></tr>'; $('allocations').innerHTML = '<p class="allocation-empty">No evaluated allocation.</p>'; setText('scenarioNote', 'Only evaluated, source-linked simulations appear here.'); return;
   }
   const baseline = selected.baseline_delay_min, scenario = selected.scenario_delay_min, benefit = selected.benefit_min ?? (baseline !== null && scenario !== null ? baseline - scenario : null);
-  $('benefitStat').innerHTML = `${escapeHtml(fmt(benefit, 1))}<small>min</small>`;
+  $('benefitStat').innerHTML = `${escapeHtml(fmt(benefit, 1))}<small> min</small>`;
   setText('benefitPercent', baseline > 0 && benefit !== null ? `${pct(benefit / baseline, 1)} of baseline` : 'Bounded scenario');
   const maxDelay = Math.max(1, ...atBudget.flatMap(item => [item.baseline_delay_min || 0, item.scenario_delay_min || 0]));
   const bars = [{ name: 'No intervention', value: baseline, active: false }, { name: policyName(state.policy), value: scenario, active: true }];
@@ -216,12 +234,12 @@ function renderScenarios() {
 }
 function renderFindings() {
   const findings = state.data.findings || [];
-  $('findings').innerHTML = findings.length ? findings.map((finding, index) => `<article class="finding"><div class="finding-number"><span>FINDING ${String(index + 1).padStart(2, '0')}</span><span aria-hidden="true">↗</span></div><h3>${escapeHtml(finding.title || finding.question)}</h3><p class="finding-question">${escapeHtml(finding.question)}</p><p class="finding-result">${escapeHtml(finding.finding || finding.result)}</p><dl><dt>Denominator</dt><dd>${escapeHtml(finding.denominator || 'See generating analysis.')}</dd><dt>Limitation</dt><dd>${escapeHtml(finding.limitation || finding.limit || 'See source analysis for limitations.')}</dd><dt>Decision implication</dt><dd>${escapeHtml(finding.decision || finding.implication || 'See source analysis.')}</dd></dl>${externalLink(finding.sql_url || state.data.meta?.analysis_url || `${repo}/blob/main/reports/eda.json`, 'Inspect the analysis', 'text-link')}</article>`).join('') : '<p class="empty-state">No analytical findings were included in this snapshot. Inspect the source analyses before drawing conclusions.</p>';
+  $('findings').innerHTML = findings.length ? findings.map((finding, index) => `<article class="finding"><div class="finding-number"><span>FINDING / ${String(index + 1).padStart(2, '0')}</span><span aria-hidden="true">↗</span></div><h3>${escapeHtml(finding.title || finding.question)}</h3><p class="finding-question">${escapeHtml(finding.question)}</p><p class="finding-result">${escapeHtml(finding.finding || finding.result)}</p><p class="finding-decision"><b>Decision implication</b>${escapeHtml(finding.decision || finding.implication || 'See source analysis.')}</p><details class="finding-context"><summary>Denominator &amp; limitations</summary><dl><dt>Denominator</dt><dd>${escapeHtml(finding.denominator || 'See generating analysis.')}</dd><dt>Limitation</dt><dd>${escapeHtml(finding.limitation || finding.limit || 'See source analysis for limitations.')}</dd></dl></details>${externalLink(finding.sql_url || state.data.meta?.analysis_url || `${repo}/blob/main/reports/eda.json`, 'Inspect the analysis', 'text-link')}</article>`).join('') : '<p class="empty-state">No analytical findings were included in this snapshot. Inspect the source analyses before drawing conclusions.</p>';
 }
 function renderModels() {
   const models = state.data.models || {}, metrics = Array.isArray(models) ? models : models.metrics || [];
   setText('modelSummary', models.summary || 'Compare the tabular model with seasonal and rolling baselines, then test the contribution of network features on unseen dates. The exported evaluation determines which forecast powers this replay.');
-  $('modelTable').innerHTML = metrics.length ? metrics.map(metric => `<tr class="${metric.model === state.data.meta?.forecast_model ? 'preferred' : ''}"><td>${escapeHtml(metric.label || policyName(metric.model || 'Unnamed model'))}</td><td>${escapeHtml(metric.split || metric.fold || 'holdout')}</td><td>${escapeHtml(pp(metric.mae))}</td><td>${escapeHtml(pp(metric.rmse))}</td><td>${escapeHtml(pp(metric.calibration_mae))}</td><td>${escapeHtml(pct(metric.severe_recall ?? metric.severe_event_recall, 1))}</td><td>${number(metric.runtime_seconds ?? metric.runtime_s) === null ? '—' : `${escapeHtml(fmt(metric.runtime_seconds ?? metric.runtime_s, 2))} s`}</td></tr>`).join('') : '<tr><td class="model-empty" colspan="7">No evaluation metrics supplied. Open the model card for evidence and limits.</td></tr>';
+  $('modelTable').innerHTML = metrics.length ? metrics.map(metric => `<tr class="${metric.model === state.data.meta?.forecast_model ? 'preferred' : ''}"><td>${escapeHtml(metric.label || policyName(metric.model || 'Unnamed model'))}${metric.model === state.data.meta?.forecast_model ? '<span class="model-badge">Selected</span>' : ''}</td><td>${escapeHtml(metric.split || metric.fold || 'holdout')}</td><td>${escapeHtml(pp(metric.mae))}</td><td>${escapeHtml(pp(metric.rmse))}</td><td>${escapeHtml(pp(metric.calibration_mae))}</td><td>${escapeHtml(pct(metric.severe_recall ?? metric.severe_event_recall, 1))}</td><td>${number(metric.runtime_seconds ?? metric.runtime_s) === null ? '—' : `${escapeHtml(fmt(metric.runtime_seconds ?? metric.runtime_s, 2))} s`}</td></tr>`).join('') : '<tr><td class="model-empty" colspan="7">No evaluation metrics supplied. Open the model card for evidence and limits.</td></tr>';
 }
 function renderProvenance() {
   const meta = state.data.meta || {}, details = [];
@@ -251,5 +269,10 @@ function bindEvents() {
   });
   document.addEventListener('visibilitychange', () => { if (document.hidden) stopPlayback(); });
   window.addEventListener('pagehide', stopPlayback);
+  let resizeFrame;
+  window.addEventListener('resize', () => { cancelAnimationFrame(resizeFrame); resizeFrame = requestAnimationFrame(() => { if (frame()) renderTimeline(); }); });
+  const navigation = document.querySelectorAll('.masthead nav a');
+  const observer = new IntersectionObserver(entries => { for (const entry of entries) { if (entry.isIntersecting) navigation.forEach(anchor => anchor.classList.toggle('nav-active', anchor.hash === `#${entry.target.id}`)); } }, { rootMargin: '-10% 0px -65% 0px' });
+  ['workspace', 'recovery', 'evidence'].forEach(id => observer.observe($(id)));
 }
 fetch('data/replay.json', { cache: 'no-cache' }).then(response => { if (!response.ok) throw new Error(`Snapshot request returned HTTP ${response.status}.`); return response.json(); }).then(initialize).catch(error => { $('loadMessage').classList.add('error'); $('loadMessage').innerHTML = `<strong>The replay snapshot could not be loaded.</strong><br>${escapeHtml(error.message)}<br><small>Serve this folder over HTTP and ensure data/replay.json is present. ${externalLink(repo, 'Open the rebuild guide')}</small>`; });

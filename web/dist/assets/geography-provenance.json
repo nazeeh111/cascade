@@ -1,0 +1,11 @@
+{
+  "source": "https://cdn.jsdelivr.net/npm/us-atlas@3.0.1/states-10m.json",
+  "upstream": "https://github.com/topojson/us-atlas",
+  "input_sha256": "d76b391ccfa8bff601d51e3e3da5d43a89fa46cd5caca72ce731b383be5596d0",
+  "output_sha256": "cb46e905bc101020e4452ad196da9ddaca4d4124667355906ba1756acf7b86b1",
+  "license": "ISC",
+  "basis": "US Census Bureau cartographic boundary data, 2017 edition",
+  "scope": "48 contiguous states and District of Columbia; background presentation geometry only",
+  "projection": "Same equirectangular lon/lat transform as airport positions in app.js",
+  "state_geometries": 49
+}

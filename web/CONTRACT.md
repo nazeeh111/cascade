@@ -1,6 +1,6 @@
 # CASCADE replay data contract
 
-Buildless app, served with `python -m http.server --directory web/dist`. It fetches `data/replay.json`; static source is index.html, styles.css, app.js. No external fonts, tiles, scripts, or paid services. The Python exporter owns data generation; the checked static packaging script owns publication assets.
+Buildless app, served with `python -m http.server --directory web/dist`. It fetches `data/replay.json`; static source is index.html, styles.css, app.js. Manrope and Census-derived US Atlas geography are locally hosted in assets/ with their license/provenance files. No external font service, tiles, scripts, or paid services. The Python exporter owns data generation; the checked static packaging script owns publication assets.
 
 ```json
 {

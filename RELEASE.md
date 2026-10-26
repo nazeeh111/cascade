@@ -1,5 +1,7 @@
 # CASCADE v0.1.0
 
+This document records the original scientific release. The current source also includes an [interface refresh](docs/DESIGN.md), with new local typography, map geography and responsive layouts. Its scientific replay, model and scenario artifacts remain byte-identical to v0.1.0; the original deployment/asset measurements below retain their release-specific scope.
+
 Released 26 October 2026. This release reconstructs 2023 Southwest domestic flight disruption, forecasts the next two hours at eight airports, and evaluates a bounded hypothetical recovery experiment.
 
 - [Public replay](https://cascade-flight-intelligence.nazeeh1.chatgpt.site)

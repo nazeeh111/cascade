@@ -38,3 +38,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Interface assets
+
+Manrope is locally hosted under the SIL Open Font License 1.1; its license and original-file hash are in `web/dist/assets/Manrope-OFL.txt` and `provenance.json`. No font service is contacted by the app.
+
+The map background uses [US Atlas](https://github.com/topojson/us-atlas) 3.0.1, redistributed under ISC from US Census Bureau 2017 cartographic boundary data. The local ISC notice, exact upstream/output hashes and projection are in `web/dist/assets/US-Atlas-LICENSE.txt` and `geography-provenance.json`. Regenerate with `python scripts/build_geography.py`. These state outlines are presentation geography; the study's flight/weather records, airport positions and scientific results are unchanged.
