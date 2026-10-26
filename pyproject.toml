@@ -1,0 +1,13 @@
+[project]
+name = "cascade-aviation"
+version = "0.1.0"
+description = "SQL-first flight disruption reconstruction, forecasting, and bounded recovery experiments"
+requires-python = ">=3.11,<3.14"
+dependencies = ["duckdb>=1.4,<1.5", "dbt-duckdb>=1.9,<1.11", "numpy>=2,<3", "scikit-learn>=1.6,<1.8", "scipy>=1.14,<1.17", "ortools>=9.12,<10", "requests>=2.32,<3", "pyarrow>=18,<23", "pytest>=8,<10", "airportsdata>=2025.1"]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+[tool.hatch.build.targets.wheel]
+packages = ["cascade"]
+[project.scripts]
+cascade = "cascade.cli:main"

@@ -1,0 +1,10 @@
+cascade:
+  target: local
+  outputs:
+    local:
+      type: duckdb
+      path: "{{ env_var('CASCADE_DB') }}"
+      threads: 4
+      settings:
+        timezone: UTC
+        memory_limit: 2GB

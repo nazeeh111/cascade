@@ -1,0 +1,23 @@
+{
+  "mode": "full",
+  "seconds": 242.122,
+  "counts": {
+    "raw_flights": 1438465,
+    "stg_flights": 1438465,
+    "flights": 1438465,
+    "raw_weather": 93148,
+    "stg_weather": 93000,
+    "rotations": 1160285,
+    "features": 69688
+  },
+  "duckdb_version": "1.4.5",
+  "db_bytes": 736374784,
+  "source_files": 20,
+  "db_bytes_after_review": 756822016,
+  "source_time_rotations_excluded": 104,
+  "reviewed_clock_flags": [
+    25,
+    31,
+    0
+  ]
+}

@@ -1,0 +1,58 @@
+version: 2
+models:
+  - name: carriers
+    description: One reporting carrier per carrier code.
+    columns:
+      - name: carrier
+        data_tests: [unique, not_null]
+  - name: stg_flights
+    description: One BTS scheduled flight key after deterministic duplicate collapse, corrections audited.
+    columns:
+      - name: flight_id
+        data_tests: [unique, not_null]
+  - name: flights
+    description: One validated reporting-carrier scheduled flight with UTC timestamps and signed nullable delays.
+    columns:
+      - name: flight_id
+        data_tests: [unique, not_null]
+      - name: origin
+        data_tests:
+          - relationships: {arguments: {to: "ref('airports')", field: airport}}
+      - name: dest
+        data_tests:
+          - relationships: {arguments: {to: "ref('airports')", field: airport}}
+      - name: carrier
+        data_tests:
+          - relationships: {arguments: {to: "ref('carriers')", field: carrier}}
+      - name: sched_dep
+        data_tests: [not_null]
+  - name: stg_weather
+    description: One station/observation timestamp after deterministic report priority. Available_at assumes 60-minute publication delay.
+    columns:
+      - name: observation_hash
+        data_tests: [not_null]
+      - name: airport
+        data_tests:
+          - relationships: {arguments: {to: "ref('airports')", field: airport}}
+  - name: rotations
+    description: One validated immediate same-tail flight pair. Retrospective domestic-only evidence, no crew/passenger inference.
+    columns:
+      - name: from_flight_id
+        data_tests:
+          - unique
+          - relationships: {arguments: {to: "ref('flights')", field: flight_id}}
+      - name: to_flight_id
+        data_tests:
+          - unique
+          - relationships: {arguments: {to: "ref('flights')", field: flight_id}}
+  - name: features
+    description: One airport/hourly UTC cutoff forecasting following two-hour departure cohort. No realized future weather/tail/delay cause features.
+
+seeds:
+  - name: airports
+    description: One airport per IATA code. Coordinates/timezones from airportsdata; eight focal NOAA mappings reviewed separately.
+    columns:
+      - name: airport
+        data_tests: [unique, not_null]
+      - name: timezone
+        data_tests: [not_null]

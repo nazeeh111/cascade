@@ -1,0 +1,16 @@
+name: cascade
+version: 0.1.0
+config-version: 2
+profile: cascade
+model-paths: [models]
+seed-paths: [seeds]
+test-paths: [tests]
+models:
+  cascade:
+    +materialized: table
+seeds:
+  cascade:
+    airports:
+      +column_types:
+        airport: varchar
+        station: varchar

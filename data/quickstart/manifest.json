@@ -1,0 +1,114 @@
+{
+  "name": "CASCADE small real-data quickstart",
+  "selection": "WN departures dated Jan1\u20137 and Jun/Jul/Aug/Sep/Oct/Nov/Dec1\u20133,2023; eight NOAA stations same periods plus one trailing UTC day. Dates are discontinuous.",
+  "sources": [
+    {
+      "path": "data/quickstart/flights/year=2023/month=01/flights.parquet",
+      "rows": 25984,
+      "sha256": "7ddceb9ad1c4841b13cf367fe225f1f891c27f457931dc33eab5e28d76679b8f",
+      "bytes": 420435
+    },
+    {
+      "path": "data/quickstart/flights/year=2023/month=06/flights.parquet",
+      "rows": 11401,
+      "sha256": "e2d296d84db480a1811298838917d41e633e0b20104874c4fdcebf8735d086f6",
+      "bytes": 194384
+    },
+    {
+      "path": "data/quickstart/flights/year=2023/month=07/flights.parquet",
+      "rows": 11466,
+      "sha256": "3c2ea480338a25ae265429af06693ee87e1476a601988d6f5d468fc4bd3d7609",
+      "bytes": 224758
+    },
+    {
+      "path": "data/quickstart/flights/year=2023/month=08/flights.parquet",
+      "rows": 12690,
+      "sha256": "dab0f336faa1cab58be946ddc3906d44c1316e5df5c660476f17c551e4456566",
+      "bytes": 192813
+    },
+    {
+      "path": "data/quickstart/flights/year=2023/month=09/flights.parquet",
+      "rows": 11124,
+      "sha256": "339e8cbae733c0b1c72985e2a9757769bfdeb59af603060cba7db1f4218c9db3",
+      "bytes": 216078
+    },
+    {
+      "path": "data/quickstart/flights/year=2023/month=10/flights.parquet",
+      "rows": 12244,
+      "sha256": "1d3507c399360d077ae8c40d5e61132572bd2485e24d1c39501054c42860a9ef",
+      "bytes": 219617
+    },
+    {
+      "path": "data/quickstart/flights/year=2023/month=11/flights.parquet",
+      "rows": 12907,
+      "sha256": "c319933cf204851dd587407c296bb15cfdd6fbd36bb6d5cdbbb7dd10b5ac9001",
+      "bytes": 207814
+    },
+    {
+      "path": "data/quickstart/flights/year=2023/month=12/flights.parquet",
+      "rows": 11607,
+      "sha256": "b4f33f8863f7c93514d1737de9aa465597d1186f77dc3946ceeb455bf927d7ea",
+      "bytes": 191015
+    },
+    {
+      "path": "data/quickstart/weather/year=2023/station=72406093721/weather.parquet",
+      "airport": "BWI",
+      "rows": 1227,
+      "sha256": "7cc7e569c85fc79f3062c3329b130d785a100827a1326325576c90d010c6933e",
+      "bytes": 100469
+    },
+    {
+      "path": "data/quickstart/weather/year=2023/station=72258013960/weather.parquet",
+      "airport": "DAL",
+      "rows": 971,
+      "sha256": "237ebc8c8daccd8e5e2e7937f37dd73a3d4a68664ce8b99580e81f44fdb0198a",
+      "bytes": 80745
+    },
+    {
+      "path": "data/quickstart/weather/year=2023/station=72565003017/weather.parquet",
+      "airport": "DEN",
+      "rows": 1433,
+      "sha256": "73b5efe8ff13463f9f4c37b78a4b814cb40bf8bdff4e20af740257b2c3d6f160",
+      "bytes": 114261
+    },
+    {
+      "path": "data/quickstart/weather/year=2023/station=72244012918/weather.parquet",
+      "airport": "HOU",
+      "rows": 1088,
+      "sha256": "82f2418b17bf3d3fd39cba7e396301a4ab4ef9561d0baa9fda45cb4dc2c45eed",
+      "bytes": 89518
+    },
+    {
+      "path": "data/quickstart/weather/year=2023/station=72386023169/weather.parquet",
+      "airport": "LAS",
+      "rows": 1121,
+      "sha256": "645cb681cb06073f5dde77939b5b0125dd13d9b525c3c4cfd2be8bc01ff2a69e",
+      "bytes": 89663
+    },
+    {
+      "path": "data/quickstart/weather/year=2023/station=72534014819/weather.parquet",
+      "airport": "MDW",
+      "rows": 1295,
+      "sha256": "5a46200b3b9d6a2054a63d241e28a2c34c2a66b3bcf145fbef45d8e6147c82a1",
+      "bytes": 98743
+    },
+    {
+      "path": "data/quickstart/weather/year=2023/station=72493023230/weather.parquet",
+      "airport": "OAK",
+      "rows": 1055,
+      "sha256": "49f24a36f2bd167a7663e5f145cf430251b86d35d2ad3242e24c410c6764f2b0",
+      "bytes": 80629
+    },
+    {
+      "path": "data/quickstart/weather/year=2023/station=72278023183/weather.parquet",
+      "airport": "PHX",
+      "rows": 1119,
+      "sha256": "efd0731418d9806cc7a04daece08f1ad8bc2dfcf26dff0d13361d1a46d62c951",
+      "bytes": 88778
+    }
+  ],
+  "total_bytes": 2609720,
+  "source_manifest_sha256": "14d51bf7707dec51f348f943a35ec4b7c10feff92536d156921623146eab8e84",
+  "license": "US federal BTS/NOAA source data: public-domain US government records; see DATA_LICENSE.md. Selection and code MIT. airportsdata metadata MIT. No airline endorsement.",
+  "limitation": "A functional warehouse quickstart, not sufficient for the published full-year scientific results. Do not infer annual rates from these selected dates. Frozen public replay derives from the separately measured full run."
+}

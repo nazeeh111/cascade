@@ -1,0 +1,108 @@
+airport,name,lat,lon,timezone,station,focal
+ABQ,Albuquerque International Sunport Airport,35.038932,-106.608262,America/Denver,,false
+ALB,Albany International Airport,42.749116,-73.80198,America/New_York,,false
+AMA,Rick Husband Amarillo International Airport,35.219361,-101.705917,America/Chicago,,false
+ATL,Hartsfield/Jackson Atlanta International Airport,33.6367,-84.427864,America/New_York,,false
+AUS,Austin-Bergstrom International Airport,30.194527,-97.669876,America/Chicago,,false
+BDL,Bradley International Airport,41.939032,-72.684316,America/New_York,,false
+BHM,Birmingham-Shuttlesworth International Airport,33.563889,-86.752306,America/Chicago,,false
+BLI,Bellingham International Airport,48.792694,-122.537528,America/Los_Angeles,,false
+BNA,Nashville International Airport,36.124475,-86.678181,America/Chicago,,false
+BOI,Boise Air Trml/Gowen Field,43.564361,-116.222861,America/Boise,,false
+BOS,General Edward Lawrence Logan International Airport,42.362944,-71.006389,America/New_York,,false
+BUF,Buffalo Niagara International Airport,42.940427,-78.73057,America/New_York,,false
+BUR,Hollywood Burbank Airport,34.200694,-118.358667,America/Los_Angeles,,false
+BWI,Baltimore/Washington International Thurgood Marshall Airport,39.175728,-76.668991,America/New_York,72406093721,true
+BZN,Bozeman Yellowstone International Airport,45.777236,-111.15026,America/Denver,,false
+CHS,Charleston Afb/International Airport,32.898639,-80.040528,America/New_York,,false
+CLE,Cleveland-Hopkins International Airport,41.409407,-81.854691,America/New_York,,false
+CLT,Charlotte/Douglas International Airport,35.213187,-80.951379,America/New_York,,false
+CMH,John Glenn Columbus International Airport,39.996947,-82.892159,America/New_York,,false
+COS,City Of Colorado Springs Municipal Airport,38.805817,-104.700776,America/Denver,,false
+CRP,Corpus Christi International Airport,27.772182,-97.502422,America/Chicago,,false
+CVG,Cincinnati/Northern Kentucky International Airport,39.048837,-84.667821,America/New_York,,false
+DAL,Dallas Love Field,32.845945,-96.850877,America/Chicago,72258013960,true
+DCA,Ronald Reagan Washington Ntl Airport,38.85144,-77.037721,America/New_York,,false
+DEN,Denver International Airport,39.861667,-104.673167,America/Denver,72565003017,true
+DSM,Des Moines International Airport,41.533973,-93.663072,America/Chicago,,false
+DTW,Detroit Metro Wayne County Airport,42.212431,-83.353393,America/New_York,,false
+ECP,Northwest Florida Beaches International Airport,30.358241,-85.795602,America/Chicago,,false
+ELP,El Paso International Airport,31.807333,-106.376361,America/Denver,,false
+EUG,Mahlon Sweet Field,44.124583,-123.211972,America/Los_Angeles,,false
+FAT,Fresno Yosemite International Airport,36.776556,-119.718833,America/Los_Angeles,,false
+FLL,Fort Lauderdale/Hollywood International Airport,26.071667,-80.149694,America/New_York,,false
+GEG,Spokane International Airport,47.619028,-117.535222,America/Los_Angeles,,false
+GRR,Gerald R Ford International Airport,42.880833,-85.522806,America/New_York,,false
+GSP,Greenville Spartanburg International Airport,34.895671,-82.218859,America/New_York,,false
+HDN,Yampa Valley Airport,40.481194,-107.217667,America/Denver,,false
+HNL,Daniel K Inouye International Airport,21.317825,-157.92025,Pacific/Honolulu,,false
+HOU,William P Hobby Airport,29.6458,-95.277232,America/Chicago,72244012918,true
+HRL,Valley International Airport,26.226559,-97.655312,America/Chicago,,false
+IAD,Washington Dulles International Airport,38.947456,-77.459929,America/New_York,,false
+IAH,George Bush Intcntl/Houston Airport,29.984435,-95.341442,America/Chicago,,false
+ICT,Wichita Dwight D Eisenhower Ntl Airport,37.649952,-97.433043,America/Chicago,,false
+IND,Indianapolis International Airport,39.717306,-86.294639,America/New_York,,false
+ISP,Long Island Mac Arthur Airport,40.796136,-73.100665,America/New_York,,false
+ITO,Hilo International Airport,19.720262,-155.04847,Pacific/Honolulu,,false
+JAN,Jackson-Medgar Wiley Evers International Airport,32.311167,-90.075889,America/Chicago,,false
+JAX,Jacksonville International Airport,30.494046,-81.687847,America/New_York,,false
+KOA,Ellison Onizuka Kona International At Keahole Airport,19.738765,-156.045631,Pacific/Honolulu,,false
+LAS,Harry Reid International Airport,36.080343,-115.152449,America/Los_Angeles,72386023169,true
+LAX,Los Angeles International Airport,33.942496,-118.408049,America/Los_Angeles,,false
+LBB,Lubbock Preston Smith International Airport,33.663667,-101.820556,America/Chicago,,false
+LGA,Laguardia Airport,40.777242,-73.872606,America/New_York,,false
+LGB,Long Beach (Daugherty Field) Airport,33.81793,-118.151891,America/Los_Angeles,,false
+LIH,Lihue Airport,21.975983,-159.338958,Pacific/Honolulu,,false
+LIT,Bill And Hillary Clinton Ntl/Adams Field,34.729441,-92.224777,America/Chicago,,false
+MAF,Midland International Air And Space Port Airport,31.942528,-102.201917,America/Chicago,,false
+MCI,Kansas City International Airport,39.297604,-94.713906,America/Chicago,,false
+MCO,Orlando International Airport,28.429394,-81.308993,America/New_York,,false
+MDW,Chicago Midway International Airport,41.785643,-87.752729,America/Chicago,72534014819,true
+MEM,Frederick W Smith International/Memphis Airport,35.042411,-89.976679,America/Chicago,,false
+MHT,Manchester Boston Regional Airport,42.932806,-71.43575,America/New_York,,false
+MIA,Miami International Airport,25.795361,-80.290116,America/New_York,,false
+MKE,General Mitchell International Airport,42.946932,-87.897064,America/Chicago,,false
+MSP,Minneapolis-St Paul International/Wold-Chamberlain Airport,44.881972,-93.221778,America/Chicago,,false
+MSY,Louis Armstrong New Orleans International Airport,29.993272,-90.259028,America/Chicago,,false
+MTJ,Montrose Regional Airport,38.509806,-107.89425,America/Denver,,false
+MYR,Myrtle Beach International Airport,33.679741,-78.928321,America/New_York,,false
+OAK,Oakland San Francisco Bay Airport,37.721261,-122.221151,America/Los_Angeles,72493023230,true
+OGG,Kahului Airport,20.898649,-156.430459,Pacific/Honolulu,,false
+OKC,Okc Will Rogers International Airport,35.393073,-97.600766,America/Chicago,,false
+OMA,Eppley Airfield,41.303167,-95.894056,America/Chicago,,false
+ONT,Ontario International Airport,34.056014,-117.601187,America/Los_Angeles,,false
+ORD,Chicago O'Hare International Airport,41.97694,-87.90815,America/Chicago,,false
+ORF,Norfolk International Airport,36.895631,-76.198865,America/New_York,,false
+PBI,President Donald J Trump International Airport,26.683162,-80.095592,America/New_York,,false
+PDX,Portland International Airport,45.588709,-122.596869,America/Los_Angeles,,false
+PHL,Philadelphia International Airport,39.872084,-75.240663,America/New_York,,false
+PHX,Phoenix Sky Harbor International Airport,33.434278,-112.011583,America/Phoenix,72278023183,true
+PIT,Pittsburgh International Airport,40.491417,-80.232694,America/New_York,,false
+PNS,Pensacola International Airport,30.473417,-87.186611,America/Chicago,,false
+PSP,Palm Springs International Airport,33.82967,-116.506694,America/Los_Angeles,,false
+PVD,Rhode Island Tf Green International Airport,41.722333,-71.427722,America/New_York,,false
+PWM,Portland International Jetport Airport,43.645643,-70.308616,America/New_York,,false
+RDU,Raleigh-Durham International Airport,35.877639,-78.787472,America/New_York,,false
+RIC,Richmond International Airport,37.505181,-77.319739,America/New_York,,false
+RNO,Reno/Tahoe International Airport,39.499111,-119.768111,America/Los_Angeles,,false
+ROC,Frederick Douglass/Greater Rochester International Airport,43.119144,-77.671869,America/New_York,,false
+RSW,Southwest Florida International Airport,26.536164,-81.755155,America/New_York,,false
+SAN,San Diego International Airport,32.733563,-117.189663,America/Los_Angeles,,false
+SAT,San Antonio International Airport,29.533958,-98.469057,America/Chicago,,false
+SAV,Savannah/Hilton Head International Airport,32.127583,-81.202139,America/New_York,,false
+SBA,Santa Barbara Municipal Airport,34.426192,-119.841493,America/Los_Angeles,,false
+SDF,Louisville Muhammad Ali International Airport,38.174085,-85.736494,America/Kentucky/Louisville,,false
+SEA,Seattle-Tacoma International Airport,47.449889,-122.311778,America/Los_Angeles,,false
+SFO,San Francisco International Airport,37.618806,-122.375417,America/Los_Angeles,,false
+SJC,Mineta San Jose International Airport,37.362995,-121.928621,America/Los_Angeles,,false
+SJU,Luis Munoz Marin International Airport,18.439399,-66.002133,America/Puerto_Rico,,false
+SLC,Salt Lake City International Airport,40.788393,-111.977773,America/Denver,,false
+SMF,Sacramento International Airport,38.695444,-121.590778,America/Los_Angeles,,false
+SNA,John Wayne/Orange County Airport,33.675662,-117.868233,America/Los_Angeles,,false
+SRQ,Sarasota/Bradenton International Airport,27.395444,-82.554389,America/New_York,,false
+STL,St Louis Lambert International Airport,38.748698,-90.370026,America/Chicago,,false
+SYR,Syracuse Hancock International Airport,43.111181,-76.106321,America/New_York,,false
+TPA,Tampa International Airport,27.975469,-82.533248,America/New_York,,false
+TUL,Tulsa International Airport,36.198393,-95.888105,America/Chicago,,false
+TUS,Tucson International Airport,32.11707,-110.941463,America/Phoenix,,false
+VPS,Eglin Afb/Destin-Ft Walton Beach Airport,30.483219,-86.526044,America/Chicago,,false

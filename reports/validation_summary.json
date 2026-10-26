@@ -1,0 +1,15 @@
+{
+  "verified_at": "2026-10-26T02:46:51.943823+00:00",
+  "passed": true,
+  "check_count": 2067,
+  "full_database_checked": true,
+  "limits": "This verifier covers file/data invariants. Public access, browser interaction and release provenance are independently verified in the release evidence; it does not infer them from file presence.",
+  "python_tests": {
+    "passed": 27,
+    "evidence": "Local pytest and public CI workflow"
+  },
+  "dbt_tests": {
+    "full": 27,
+    "quickstart": 27
+  }
+}

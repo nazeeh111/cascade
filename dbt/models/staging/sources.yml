@@ -1,0 +1,9 @@
+version: 2
+sources:
+  - name: public_snapshot
+    schema: main
+    tables:
+      - name: raw_flights
+        description: Immutable WN BTS source rows, scoped at ingestion.
+      - name: raw_weather
+        description: Immutable NOAA source observations from eight airport stations.

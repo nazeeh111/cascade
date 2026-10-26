@@ -1,0 +1,186 @@
+{
+    "total_bytes_written": 0,
+    "total_bytes_read": 0,
+    "rows_returned": 5952,
+    "latency": 0.034006708,
+    "result_set_size": 333312,
+    "cumulative_rows_scanned": 163072,
+    "cpu_time": 0.035953284999999995,
+    "extra_info": {},
+    "system_peak_buffer_memory": 29188096,
+    "blocked_thread_time": 0.0,
+    "cumulative_cardinality": 128712,
+    "system_peak_temp_dir_size": 0,
+    "query_name": "select c.airport,c.cutoff,w.observed_at,w.temp_c,w.wind_ms,w.visibility_m\nfrom (select * from int_airport_hours where cutoff>=timestamp '2023-01-01'\nand cutoff<timestamp '2023-02-01') c\nasof left join stg_weather w on c.airport=w.airport and c.cutoff>=w.available_at\norder by c.airport,c.cutoff",
+    "children": [
+        {
+            "total_bytes_written": 0,
+            "result_set_size": 333312,
+            "operator_timing": 0.0000066240000000000004,
+            "operator_rows_scanned": 0,
+            "cumulative_rows_scanned": 163072,
+            "operator_cardinality": 5952,
+            "operator_type": "PROJECTION",
+            "total_bytes_read": 0,
+            "operator_name": "PROJECTION",
+            "cpu_time": 0.035953284999999995,
+            "extra_info": {
+                "Projections": [
+                    "__internal_decompress_string(#0)",
+                    "#1",
+                    "#2",
+                    "#3",
+                    "#4",
+                    "#5"
+                ],
+                "Estimated Cardinality": "93000"
+            },
+            "cumulative_cardinality": 128712,
+            "children": [
+                {
+                    "cumulative_cardinality": 122760,
+                    "extra_info": {
+                        "Order By": [
+                            "c.airport ASC",
+                            "c.cutoff ASC"
+                        ]
+                    },
+                    "operator_name": "ORDER_BY",
+                    "cpu_time": 0.035946661,
+                    "cumulative_rows_scanned": 163072,
+                    "operator_rows_scanned": 0,
+                    "operator_timing": 0.000353169,
+                    "result_set_size": 261888,
+                    "total_bytes_read": 0,
+                    "operator_type": "ORDER_BY",
+                    "total_bytes_written": 0,
+                    "operator_cardinality": 5952,
+                    "children": [
+                        {
+                            "total_bytes_written": 0,
+                            "result_set_size": 261888,
+                            "operator_timing": 0.000029917,
+                            "operator_rows_scanned": 0,
+                            "cumulative_rows_scanned": 163072,
+                            "operator_cardinality": 5952,
+                            "operator_type": "PROJECTION",
+                            "total_bytes_read": 0,
+                            "operator_name": "PROJECTION",
+                            "cpu_time": 0.035593492,
+                            "extra_info": {
+                                "Projections": [
+                                    "__internal_compress_string_uinteger(#0)",
+                                    "#1",
+                                    "#2",
+                                    "#3",
+                                    "#4",
+                                    "#5"
+                                ],
+                                "Estimated Cardinality": "93000"
+                            },
+                            "cumulative_cardinality": 116808,
+                            "children": [
+                                {
+                                    "cumulative_cardinality": 110856,
+                                    "extra_info": {
+                                        "Join Type": "LEFT",
+                                        "Conditions": [
+                                            "airport = airport",
+                                            "cutoff >= available_at"
+                                        ],
+                                        "Estimated Cardinality": "93000"
+                                    },
+                                    "operator_name": "ASOF_JOIN",
+                                    "cpu_time": 0.035563575,
+                                    "cumulative_rows_scanned": 163072,
+                                    "operator_rows_scanned": 0,
+                                    "operator_timing": 0.03434541,
+                                    "result_set_size": 333312,
+                                    "total_bytes_read": 0,
+                                    "operator_type": "ASOF_JOIN",
+                                    "total_bytes_written": 0,
+                                    "operator_cardinality": 5952,
+                                    "children": [
+                                        {
+                                            "total_bytes_written": 0,
+                                            "result_set_size": 142848,
+                                            "operator_timing": 0.0000020010000000000004,
+                                            "operator_rows_scanned": 0,
+                                            "cumulative_rows_scanned": 70072,
+                                            "operator_cardinality": 5952,
+                                            "operator_type": "PROJECTION",
+                                            "total_bytes_read": 0,
+                                            "operator_name": "PROJECTION",
+                                            "cpu_time": 0.000295419,
+                                            "extra_info": {
+                                                "Projections": [
+                                                    "airport",
+                                                    "cutoff"
+                                                ],
+                                                "Estimated Cardinality": "14014"
+                                            },
+                                            "cumulative_cardinality": 11904,
+                                            "children": [
+                                                {
+                                                    "cumulative_cardinality": 5952,
+                                                    "extra_info": {
+                                                        "Table": "int_airport_hours",
+                                                        "Type": "Sequential Scan",
+                                                        "Projections": [
+                                                            "cutoff",
+                                                            "airport"
+                                                        ],
+                                                        "Filters": "cutoff>='2023-01-01 00:00:00'::TIMESTAMP AND cutoff<'2023-02-01 00:00:00'::TIMESTAMP",
+                                                        "Estimated Cardinality": "14014"
+                                                    },
+                                                    "operator_name": "SEQ_SCAN ",
+                                                    "cpu_time": 0.000293418,
+                                                    "cumulative_rows_scanned": 70072,
+                                                    "operator_rows_scanned": 70072,
+                                                    "operator_timing": 0.000293418,
+                                                    "result_set_size": 142848,
+                                                    "total_bytes_read": 0,
+                                                    "operator_type": "TABLE_SCAN",
+                                                    "total_bytes_written": 0,
+                                                    "operator_cardinality": 5952,
+                                                    "children": []
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "total_bytes_written": 0,
+                                            "result_set_size": 5208000,
+                                            "operator_timing": 0.0009227459999999999,
+                                            "operator_rows_scanned": 93000,
+                                            "cumulative_rows_scanned": 93000,
+                                            "operator_cardinality": 93000,
+                                            "operator_type": "TABLE_SCAN",
+                                            "total_bytes_read": 0,
+                                            "operator_name": "SEQ_SCAN ",
+                                            "cpu_time": 0.0009227459999999999,
+                                            "extra_info": {
+                                                "Table": "stg_weather",
+                                                "Type": "Sequential Scan",
+                                                "Projections": [
+                                                    "airport",
+                                                    "available_at",
+                                                    "observed_at",
+                                                    "temp_c",
+                                                    "wind_ms",
+                                                    "visibility_m"
+                                                ],
+                                                "Estimated Cardinality": "93000"
+                                            },
+                                            "cumulative_cardinality": 93000,
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

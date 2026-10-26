@@ -1,0 +1,3377 @@
+{
+  "run_id": "model-2023-e3b67b9c2158",
+  "feature_query_sql": "\nSELECT airport, cutoff, target_rate, target_n, label_available_at,\n       sched_n_2h, hour, dow, month, lag_rate_2h, lag_rate_6h,\n       observed_n_2h, backlog_n, temp_c, wind_ms, visibility_m,\n       weather_age_min, upstream_rate, weather_available_at, max_event_available_at\nFROM features WHERE target_n > 0 AND target_rate IS NOT NULL\nORDER BY cutoff, airport\n",
+  "feature_rows_sha256": "63a2ad896131ba52c8764b3e4c575901da7a5a3fbae9fc2a82550a9f21735640",
+  "implementation_sha256": "55f359245338fa123fbcfae9300908147081b8b0b9513058d4519e0fe11bce36",
+  "target": "Fraction of scheduled departures in next 2h that cancel or depart >=15 minutes late",
+  "horizon_hours": 2,
+  "severe_threshold": 0.5,
+  "unit": "airport-hour cutoff with at least one scheduled target departure",
+  "selected_params": {
+    "max_iter": 180,
+    "max_leaf_nodes": 31,
+    "learning_rate": 0.05,
+    "l2_regularization": 20.0
+  },
+  "selected_model": "tabular",
+  "selection_rule": "Lowest average August/September validation MAE; never selected using October-December labels",
+  "tuning": [
+    {
+      "params": {
+        "max_iter": 120,
+        "max_leaf_nodes": 15,
+        "learning_rate": 0.06,
+        "l2_regularization": 10.0
+      },
+      "folds": [
+        {
+          "month": 8,
+          "train_n": 31099,
+          "test_n": 4636,
+          "mae": 0.11574508687282606,
+          "runtime_seconds": 2.3744552090065554
+        },
+        {
+          "month": 9,
+          "train_n": 35735,
+          "test_n": 4368,
+          "mae": 0.10792751721860898,
+          "runtime_seconds": 3.3181929170386866
+        }
+      ],
+      "mean_mae": 0.11183630204571751
+    },
+    {
+      "params": {
+        "max_iter": 180,
+        "max_leaf_nodes": 31,
+        "learning_rate": 0.05,
+        "l2_regularization": 20.0
+      },
+      "folds": [
+        {
+          "month": 8,
+          "train_n": 31099,
+          "test_n": 4636,
+          "mae": 0.11657987422610082,
+          "runtime_seconds": 10.071698417072184
+        },
+        {
+          "month": 9,
+          "train_n": 35735,
+          "test_n": 4368,
+          "mae": 0.10708558858170536,
+          "runtime_seconds": 6.061489583924413
+        }
+      ],
+      "mean_mae": 0.1118327314039031
+    }
+  ],
+  "folds": [
+    {
+      "fold": "validation_august",
+      "split": "validation",
+      "fit_before": "2023-08-01 00:00:00",
+      "evaluation_end_exclusive": "2023-09-01 00:00:00",
+      "train_rows": 31099,
+      "evaluation_rows": 4636,
+      "max_training_label_available_at": "2023-07-31 23:00:00",
+      "out_of_time_residual_rows": 9003,
+      "models": {
+        "seasonal": {
+          "n": 4636,
+          "mae": 0.14078002238071488,
+          "rmse": 0.1831783705415588,
+          "flight_weighted_mae": 0.1393623799544422,
+          "bias": 0.006060876934894194,
+          "severe_events": 1022,
+          "severe_predicted": 370,
+          "severe_recall": 0.2181996086105675,
+          "severe_precision": 0.6027027027027027,
+          "calibration_mae": 0.029961424841497403,
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "n": 90,
+              "predicted": 0.08901469509561422,
+              "observed": 0.05999765757118698
+            },
+            {
+              "lower": 0.1,
+              "n": 1098,
+              "predicted": 0.1544255037090578,
+              "observed": 0.10374580104418642
+            },
+            {
+              "lower": 0.2,
+              "n": 1126,
+              "predicted": 0.2476882617963728,
+              "observed": 0.22527098949224444
+            },
+            {
+              "lower": 0.3,
+              "n": 1048,
+              "predicted": 0.3498440510172945,
+              "observed": 0.36960372437243816
+            },
+            {
+              "lower": 0.4,
+              "n": 904,
+              "predicted": 0.4429901574667396,
+              "observed": 0.4741592827668929
+            },
+            {
+              "lower": 0.5,
+              "n": 362,
+              "predicted": 0.5323050707452782,
+              "observed": 0.5496274988927833
+            },
+            {
+              "lower": 0.6,
+              "n": 8,
+              "predicted": 0.6480047242727103,
+              "observed": 0.6787202380952381
+            }
+          ],
+          "fit_predict_seconds": 0.03399429202545434,
+          "denominator_sensitivity": {
+            "5": {
+              "n": 4545,
+              "mae": 0.137906951717533,
+              "rmse": 0.17838248574673565,
+              "flight_weighted_mae": 0.13910052793573716,
+              "bias": 0.005940332446950057,
+              "severe_events": 988,
+              "severe_predicted": 370,
+              "severe_recall": 0.2257085020242915,
+              "severe_precision": 0.6027027027027027,
+              "calibration_mae": 0.0326735151834832,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 88,
+                  "predicted": 0.08913043701353969,
+                  "observed": 0.06136124069780486
+                },
+                {
+                  "lower": 0.1,
+                  "n": 1093,
+                  "predicted": 0.1544103006947692,
+                  "observed": 0.1023905668312138
+                },
+                {
+                  "lower": 0.2,
+                  "n": 1103,
+                  "predicted": 0.24737429240233558,
+                  "observed": 0.22158217059679716
+                },
+                {
+                  "lower": 0.3,
+                  "n": 1003,
+                  "predicted": 0.35010905308476364,
+                  "observed": 0.37372353254468116
+                },
+                {
+                  "lower": 0.4,
+                  "n": 888,
+                  "predicted": 0.44313881364576646,
+                  "observed": 0.47754128185578587
+                },
+                {
+                  "lower": 0.5,
+                  "n": 362,
+                  "predicted": 0.5323050707452782,
+                  "observed": 0.5496274988927833
+                },
+                {
+                  "lower": 0.6,
+                  "n": 8,
+                  "predicted": 0.6480047242727103,
+                  "observed": 0.6787202380952381
+                }
+              ]
+            },
+            "10": {
+              "n": 4265,
+              "mae": 0.13611659333618942,
+              "rmse": 0.175907403107355,
+              "flight_weighted_mae": 0.13865166556252587,
+              "bias": 0.007574356522196361,
+              "severe_events": 914,
+              "severe_predicted": 359,
+              "severe_recall": 0.23522975929978118,
+              "severe_precision": 0.5988857938718662,
+              "calibration_mae": 0.03206689887426557,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 62,
+                  "predicted": 0.0914129707588746,
+                  "observed": 0.06421190947993603
+                },
+                {
+                  "lower": 0.1,
+                  "n": 1000,
+                  "predicted": 0.15522205760278035,
+                  "observed": 0.10316487367350081
+                },
+                {
+                  "lower": 0.2,
+                  "n": 1061,
+                  "predicted": 0.2472420758954096,
+                  "observed": 0.21822103215895214
+                },
+                {
+                  "lower": 0.3,
+                  "n": 957,
+                  "predicted": 0.35029228179753524,
+                  "observed": 0.3725658273700197
+                },
+                {
+                  "lower": 0.4,
+                  "n": 826,
+                  "predicted": 0.4433743038213975,
+                  "observed": 0.47324012206733707
+                },
+                {
+                  "lower": 0.5,
+                  "n": 353,
+                  "predicted": 0.5324970213255837,
+                  "observed": 0.5497596447569053
+                },
+                {
+                  "lower": 0.6,
+                  "n": 6,
+                  "predicted": 0.6505117323741,
+                  "observed": 0.675793650793651
+                }
+              ]
+            }
+          }
+        },
+        "rolling": {
+          "n": 4636,
+          "mae": 0.14335694685002723,
+          "rmse": 0.19101137020496423,
+          "flight_weighted_mae": 0.14082660526504698,
+          "bias": -0.05982472574921409,
+          "severe_events": 1022,
+          "severe_predicted": 660,
+          "severe_recall": 0.44129158512720157,
+          "severe_precision": 0.6833333333333333,
+          "calibration_mae": 0.07652185590472135,
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "n": 1376,
+              "predicted": 0.03464077661196285,
+              "observed": 0.15075204413064644
+            },
+            {
+              "lower": 0.1,
+              "n": 1104,
+              "predicted": 0.14006226294523633,
+              "observed": 0.18109835017461062
+            },
+            {
+              "lower": 0.2,
+              "n": 630,
+              "predicted": 0.24195068812141715,
+              "observed": 0.33784958624277484
+            },
+            {
+              "lower": 0.3,
+              "n": 512,
+              "predicted": 0.3432966723564128,
+              "observed": 0.4167239282826197
+            },
+            {
+              "lower": 0.4,
+              "n": 354,
+              "predicted": 0.44037042755687683,
+              "observed": 0.4770014191280949
+            },
+            {
+              "lower": 0.5,
+              "n": 289,
+              "predicted": 0.536366816878989,
+              "observed": 0.5232249872423814
+            },
+            {
+              "lower": 0.6,
+              "n": 180,
+              "predicted": 0.6409813124836768,
+              "observed": 0.5653319027479194
+            },
+            {
+              "lower": 0.7,
+              "n": 82,
+              "predicted": 0.7392958762946168,
+              "observed": 0.631054457596023
+            },
+            {
+              "lower": 0.8,
+              "n": 53,
+              "predicted": 0.8400560077993676,
+              "observed": 0.7248831133478476
+            },
+            {
+              "lower": 0.9,
+              "n": 56,
+              "predicted": 0.9658162672864847,
+              "observed": 0.8531536700751502
+            }
+          ],
+          "fit_predict_seconds": 0.0012513340916484594,
+          "denominator_sensitivity": {
+            "5": {
+              "n": 4545,
+              "mae": 0.1397792228405132,
+              "rmse": 0.18415863077696323,
+              "flight_weighted_mae": 0.1405009500829456,
+              "bias": -0.06209022416628036,
+              "severe_events": 988,
+              "severe_predicted": 632,
+              "severe_recall": 0.44635627530364375,
+              "severe_precision": 0.6977848101265823,
+              "calibration_mae": 0.07461521883470196,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 1361,
+                  "predicted": 0.03443617165536599,
+                  "observed": 0.1497806608305923
+                },
+                {
+                  "lower": 0.1,
+                  "n": 1092,
+                  "predicted": 0.1399529139923907,
+                  "observed": 0.1798070011533304
+                },
+                {
+                  "lower": 0.2,
+                  "n": 618,
+                  "predicted": 0.24191537430153778,
+                  "observed": 0.33793728047402616
+                },
+                {
+                  "lower": 0.3,
+                  "n": 498,
+                  "predicted": 0.34344680667286986,
+                  "observed": 0.4165582020362142
+                },
+                {
+                  "lower": 0.4,
+                  "n": 344,
+                  "predicted": 0.4402642703615864,
+                  "observed": 0.4821468092190279
+                },
+                {
+                  "lower": 0.5,
+                  "n": 279,
+                  "predicted": 0.5357754831474522,
+                  "observed": 0.5342127406680343
+                },
+                {
+                  "lower": 0.6,
+                  "n": 172,
+                  "predicted": 0.6407439446064431,
+                  "observed": 0.5722465648912336
+                },
+                {
+                  "lower": 0.7,
+                  "n": 76,
+                  "predicted": 0.7392742411439918,
+                  "observed": 0.6710061253009723
+                },
+                {
+                  "lower": 0.8,
+                  "n": 50,
+                  "predicted": 0.8415181917967414,
+                  "observed": 0.7483761001487185
+                },
+                {
+                  "lower": 0.9,
+                  "n": 55,
+                  "predicted": 0.9668476374354951,
+                  "observed": 0.8504837368037893
+                }
+              ]
+            },
+            "10": {
+              "n": 4265,
+              "mae": 0.13831303235742246,
+              "rmse": 0.18168235574503142,
+              "flight_weighted_mae": 0.14016900251733266,
+              "bias": -0.06442207635097305,
+              "severe_events": 914,
+              "severe_predicted": 576,
+              "severe_recall": 0.4420131291028446,
+              "severe_precision": 0.7013888888888888,
+              "calibration_mae": 0.07568364826409528,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 1286,
+                  "predicted": 0.03356956150801312,
+                  "observed": 0.15146193687325626
+                },
+                {
+                  "lower": 0.1,
+                  "n": 1018,
+                  "predicted": 0.14131059820852715,
+                  "observed": 0.1847686476961443
+                },
+                {
+                  "lower": 0.2,
+                  "n": 589,
+                  "predicted": 0.2416767041832735,
+                  "observed": 0.3393867754864509
+                },
+                {
+                  "lower": 0.3,
+                  "n": 471,
+                  "predicted": 0.34287204120301423,
+                  "observed": 0.410338423168678
+                },
+                {
+                  "lower": 0.4,
+                  "n": 325,
+                  "predicted": 0.44069755276025085,
+                  "observed": 0.4825365396529804
+                },
+                {
+                  "lower": 0.5,
+                  "n": 253,
+                  "predicted": 0.5355997006288601,
+                  "observed": 0.5321433178193136
+                },
+                {
+                  "lower": 0.6,
+                  "n": 156,
+                  "predicted": 0.6405012857089346,
+                  "observed": 0.5783108238869971
+                },
+                {
+                  "lower": 0.7,
+                  "n": 69,
+                  "predicted": 0.7409193283798947,
+                  "observed": 0.6838054584635508
+                },
+                {
+                  "lower": 0.8,
+                  "n": 47,
+                  "predicted": 0.8407631528078633,
+                  "observed": 0.7567070974226487
+                },
+                {
+                  "lower": 0.9,
+                  "n": 51,
+                  "predicted": 0.9671419432661036,
+                  "observed": 0.858364814200165
+                }
+              ]
+            }
+          }
+        },
+        "tabular": {
+          "n": 4636,
+          "mae": 0.11657987422610082,
+          "rmse": 0.1528932000907115,
+          "flight_weighted_mae": 0.11184783037857635,
+          "bias": 0.046657767300836206,
+          "severe_events": 1022,
+          "severe_predicted": 1131,
+          "severe_recall": 0.7054794520547946,
+          "severe_precision": 0.6374889478337754,
+          "calibration_mae": 0.04665776730083619,
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "n": 625,
+              "predicted": 0.06467382116717164,
+              "observed": 0.0644044875851092
+            },
+            {
+              "lower": 0.1,
+              "n": 839,
+              "predicted": 0.14821980437969481,
+              "observed": 0.12867370367884345
+            },
+            {
+              "lower": 0.2,
+              "n": 617,
+              "predicted": 0.25256886768177605,
+              "observed": 0.20019686156403485
+            },
+            {
+              "lower": 0.3,
+              "n": 666,
+              "predicted": 0.3486812901607353,
+              "observed": 0.2858249924208412
+            },
+            {
+              "lower": 0.4,
+              "n": 758,
+              "predicted": 0.44989116320371314,
+              "observed": 0.3774251254014667
+            },
+            {
+              "lower": 0.5,
+              "n": 572,
+              "predicted": 0.5447239368841732,
+              "observed": 0.483330310563393
+            },
+            {
+              "lower": 0.6,
+              "n": 293,
+              "predicted": 0.6434484729310862,
+              "observed": 0.57441314186074
+            },
+            {
+              "lower": 0.7,
+              "n": 140,
+              "predicted": 0.7491251521683768,
+              "observed": 0.6638827188457402
+            },
+            {
+              "lower": 0.8,
+              "n": 82,
+              "predicted": 0.8455933581906271,
+              "observed": 0.8111437073690685
+            },
+            {
+              "lower": 0.9,
+              "n": 44,
+              "predicted": 0.9425539956699435,
+              "observed": 0.9305198998808518
+            }
+          ],
+          "fit_predict_seconds": 2.9382885840022936,
+          "denominator_sensitivity": {
+            "5": {
+              "n": 4545,
+              "mae": 0.11328590520496998,
+              "rmse": 0.14688250972326747,
+              "flight_weighted_mae": 0.11153515026725327,
+              "bias": 0.046053249772418925,
+              "severe_events": 988,
+              "severe_predicted": 1120,
+              "severe_recall": 0.7236842105263158,
+              "severe_precision": 0.6383928571428571,
+              "calibration_mae": 0.04605324977241891,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 623,
+                  "predicted": 0.06467122708832905,
+                  "observed": 0.06461124356451566
+                },
+                {
+                  "lower": 0.1,
+                  "n": 839,
+                  "predicted": 0.14821980437969481,
+                  "observed": 0.12867370367884345
+                },
+                {
+                  "lower": 0.2,
+                  "n": 601,
+                  "predicted": 0.2519782387037813,
+                  "observed": 0.19942561883251722
+                },
+                {
+                  "lower": 0.3,
+                  "n": 631,
+                  "predicted": 0.34861960509995693,
+                  "observed": 0.2829256919476179
+                },
+                {
+                  "lower": 0.4,
+                  "n": 731,
+                  "predicted": 0.4501429561202145,
+                  "observed": 0.3807636731249135
+                },
+                {
+                  "lower": 0.5,
+                  "n": 567,
+                  "predicted": 0.5448462021058464,
+                  "observed": 0.48318331153837873
+                },
+                {
+                  "lower": 0.6,
+                  "n": 288,
+                  "predicted": 0.6436752062758548,
+                  "observed": 0.5754156848328593
+                },
+                {
+                  "lower": 0.7,
+                  "n": 139,
+                  "predicted": 0.7488477720140443,
+                  "observed": 0.6686588535136951
+                },
+                {
+                  "lower": 0.8,
+                  "n": 82,
+                  "predicted": 0.8455933581906271,
+                  "observed": 0.8111437073690685
+                },
+                {
+                  "lower": 0.9,
+                  "n": 44,
+                  "predicted": 0.9425539956699435,
+                  "observed": 0.9305198998808518
+                }
+              ]
+            },
+            "10": {
+              "n": 4265,
+              "mae": 0.11123552206613255,
+              "rmse": 0.14402862597165972,
+              "flight_weighted_mae": 0.11095730149234061,
+              "bias": 0.048755291993562336,
+              "severe_events": 914,
+              "severe_predicted": 1078,
+              "severe_recall": 0.7472647702407003,
+              "severe_precision": 0.6335807050092764,
+              "calibration_mae": 0.04875529199356232,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 550,
+                  "predicted": 0.06604040870685633,
+                  "observed": 0.06526123228466593
+                },
+                {
+                  "lower": 0.1,
+                  "n": 796,
+                  "predicted": 0.148047653670742,
+                  "observed": 0.12866526990812452
+                },
+                {
+                  "lower": 0.2,
+                  "n": 572,
+                  "predicted": 0.25206910696301393,
+                  "observed": 0.20124464995714283
+                },
+                {
+                  "lower": 0.3,
+                  "n": 590,
+                  "predicted": 0.34815722817871636,
+                  "observed": 0.2777534310463722
+                },
+                {
+                  "lower": 0.4,
+                  "n": 679,
+                  "predicted": 0.45038803456877596,
+                  "observed": 0.3741025419833471
+                },
+                {
+                  "lower": 0.5,
+                  "n": 545,
+                  "predicted": 0.5448579968676348,
+                  "observed": 0.4809659551904012
+                },
+                {
+                  "lower": 0.6,
+                  "n": 279,
+                  "predicted": 0.6437735845175169,
+                  "observed": 0.5687285762989931
+                },
+                {
+                  "lower": 0.7,
+                  "n": 133,
+                  "predicted": 0.7486713589787766,
+                  "observed": 0.6676209070556665
+                },
+                {
+                  "lower": 0.8,
+                  "n": 78,
+                  "predicted": 0.8449792288918866,
+                  "observed": 0.8126767180033797
+                },
+                {
+                  "lower": 0.9,
+                  "n": 43,
+                  "predicted": 0.9432922394643578,
+                  "observed": 0.9289040835990112
+                }
+              ]
+            }
+          }
+        },
+        "temporal_residual": {
+          "n": 4636,
+          "mae": 0.12303717348735455,
+          "rmse": 0.1589405420812177,
+          "flight_weighted_mae": 0.11869557287485281,
+          "bias": 0.06320053756102748,
+          "severe_events": 1022,
+          "severe_predicted": 1253,
+          "severe_recall": 0.7446183953033269,
+          "severe_precision": 0.6073423782920989,
+          "calibration_mae": 0.06320053756102745,
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "n": 542,
+              "predicted": 0.07265866455678054,
+              "observed": 0.06328544281567154
+            },
+            {
+              "lower": 0.1,
+              "n": 791,
+              "predicted": 0.15443000966473322,
+              "observed": 0.11703713628276788
+            },
+            {
+              "lower": 0.2,
+              "n": 606,
+              "predicted": 0.24949058900283258,
+              "observed": 0.1901313322220502
+            },
+            {
+              "lower": 0.3,
+              "n": 703,
+              "predicted": 0.3489266613178171,
+              "observed": 0.26612402387725254
+            },
+            {
+              "lower": 0.4,
+              "n": 741,
+              "predicted": 0.4518186062110493,
+              "observed": 0.3617505321826933
+            },
+            {
+              "lower": 0.5,
+              "n": 629,
+              "predicted": 0.5453239336783118,
+              "observed": 0.46701513757279206
+            },
+            {
+              "lower": 0.6,
+              "n": 344,
+              "predicted": 0.6458886635431984,
+              "observed": 0.5601030515321159
+            },
+            {
+              "lower": 0.7,
+              "n": 141,
+              "predicted": 0.7516419470810852,
+              "observed": 0.6653287085141435
+            },
+            {
+              "lower": 0.8,
+              "n": 91,
+              "predicted": 0.8458353158809551,
+              "observed": 0.7831953009215775
+            },
+            {
+              "lower": 0.9,
+              "n": 48,
+              "predicted": 0.9453890123213166,
+              "observed": 0.9291318198671834
+            }
+          ],
+          "fit_predict_seconds": 9.320651791989803,
+          "denominator_sensitivity": {
+            "5": {
+              "n": 4545,
+              "mae": 0.11984595129849226,
+              "rmse": 0.15332848231463286,
+              "flight_weighted_mae": 0.11839371352084847,
+              "bias": 0.06280283962678121,
+              "severe_events": 988,
+              "severe_predicted": 1242,
+              "severe_recall": 0.7641700404858299,
+              "severe_precision": 0.6078904991948471,
+              "calibration_mae": 0.06280283962678122,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 540,
+                  "predicted": 0.0726602887599417,
+                  "observed": 0.06351983334461848
+                },
+                {
+                  "lower": 0.1,
+                  "n": 791,
+                  "predicted": 0.15443000966473322,
+                  "observed": 0.11703713628276788
+                },
+                {
+                  "lower": 0.2,
+                  "n": 596,
+                  "predicted": 0.24893845353245989,
+                  "observed": 0.1901055715770063
+                },
+                {
+                  "lower": 0.3,
+                  "n": 663,
+                  "predicted": 0.348724360335573,
+                  "observed": 0.2632003852977001
+                },
+                {
+                  "lower": 0.4,
+                  "n": 713,
+                  "predicted": 0.4519747326493742,
+                  "observed": 0.3636846344282969
+                },
+                {
+                  "lower": 0.5,
+                  "n": 622,
+                  "predicted": 0.5454109585409708,
+                  "observed": 0.46610801961407206
+                },
+                {
+                  "lower": 0.6,
+                  "n": 340,
+                  "predicted": 0.646046860837058,
+                  "observed": 0.5630160286089643
+                },
+                {
+                  "lower": 0.7,
+                  "n": 141,
+                  "predicted": 0.7516419470810852,
+                  "observed": 0.6653287085141435
+                },
+                {
+                  "lower": 0.8,
+                  "n": 91,
+                  "predicted": 0.8458353158809551,
+                  "observed": 0.7831953009215775
+                },
+                {
+                  "lower": 0.9,
+                  "n": 48,
+                  "predicted": 0.9453890123213166,
+                  "observed": 0.9291318198671834
+                }
+              ]
+            },
+            "10": {
+              "n": 4265,
+              "mae": 0.11800551380174626,
+              "rmse": 0.150839199610193,
+              "flight_weighted_mae": 0.11788793266517487,
+              "bias": 0.06577716334452194,
+              "severe_events": 914,
+              "severe_predicted": 1195,
+              "severe_recall": 0.7866520787746171,
+              "severe_precision": 0.601673640167364,
+              "calibration_mae": 0.06577716334452191,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 471,
+                  "predicted": 0.07373065491946332,
+                  "observed": 0.06433693021884947
+                },
+                {
+                  "lower": 0.1,
+                  "n": 749,
+                  "predicted": 0.1541366048132255,
+                  "observed": 0.11680254333564692
+                },
+                {
+                  "lower": 0.2,
+                  "n": 566,
+                  "predicted": 0.24871220910915415,
+                  "observed": 0.19193684451100548
+                },
+                {
+                  "lower": 0.3,
+                  "n": 628,
+                  "predicted": 0.3485792803710077,
+                  "observed": 0.25874701479879786
+                },
+                {
+                  "lower": 0.4,
+                  "n": 656,
+                  "predicted": 0.45262239835782914,
+                  "observed": 0.35710293490816564
+                },
+                {
+                  "lower": 0.5,
+                  "n": 595,
+                  "predicted": 0.5454730444257831,
+                  "observed": 0.4626506297611585
+                },
+                {
+                  "lower": 0.6,
+                  "n": 331,
+                  "predicted": 0.6461081578281093,
+                  "observed": 0.5570423120320345
+                },
+                {
+                  "lower": 0.7,
+                  "n": 134,
+                  "predicted": 0.7514453677502926,
+                  "observed": 0.6616518500036883
+                },
+                {
+                  "lower": 0.8,
+                  "n": 87,
+                  "predicted": 0.8449956575043572,
+                  "observed": 0.7832847400444087
+                },
+                {
+                  "lower": 0.9,
+                  "n": 48,
+                  "predicted": 0.9453890123213166,
+                  "observed": 0.9291318198671834
+                }
+              ]
+            }
+          }
+        },
+        "graph_residual": {
+          "n": 4636,
+          "mae": 0.11972893567551963,
+          "rmse": 0.15556217396275024,
+          "flight_weighted_mae": 0.11471281807261961,
+          "bias": 0.056311821198272625,
+          "severe_events": 1022,
+          "severe_predicted": 1237,
+          "severe_recall": 0.7465753424657534,
+          "severe_precision": 0.6168148746968473,
+          "calibration_mae": 0.05697512428569606,
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "n": 569,
+              "predicted": 0.06261991933342938,
+              "observed": 0.06392728546020779
+            },
+            {
+              "lower": 0.1,
+              "n": 827,
+              "predicted": 0.15048040270953505,
+              "observed": 0.12252371021552493
+            },
+            {
+              "lower": 0.2,
+              "n": 595,
+              "predicted": 0.2511182971638306,
+              "observed": 0.19594990857493713
+            },
+            {
+              "lower": 0.3,
+              "n": 650,
+              "predicted": 0.3504276147786075,
+              "observed": 0.26191430838606705
+            },
+            {
+              "lower": 0.4,
+              "n": 758,
+              "predicted": 0.4531913769410587,
+              "observed": 0.36442731121039407
+            },
+            {
+              "lower": 0.5,
+              "n": 631,
+              "predicted": 0.5451148447022632,
+              "observed": 0.4685086757023429
+            },
+            {
+              "lower": 0.6,
+              "n": 347,
+              "predicted": 0.643679536054857,
+              "observed": 0.5767717230528725
+            },
+            {
+              "lower": 0.7,
+              "n": 151,
+              "predicted": 0.7460499772852421,
+              "observed": 0.6850581713440073
+            },
+            {
+              "lower": 0.8,
+              "n": 84,
+              "predicted": 0.8492041233190316,
+              "observed": 0.8364459530554422
+            },
+            {
+              "lower": 0.9,
+              "n": 24,
+              "predicted": 0.9294850421033956,
+              "observed": 0.9625535933746718
+            }
+          ],
+          "fit_predict_seconds": 9.392753834021278,
+          "denominator_sensitivity": {
+            "5": {
+              "n": 4545,
+              "mae": 0.1164479261050949,
+              "rmse": 0.1496146535329185,
+              "flight_weighted_mae": 0.11440124669514924,
+              "bias": 0.055599477421351316,
+              "severe_events": 988,
+              "severe_predicted": 1225,
+              "severe_recall": 0.7651821862348178,
+              "severe_precision": 0.6171428571428571,
+              "calibration_mae": 0.05632210226900989,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 567,
+                  "predicted": 0.06265627106007886,
+                  "observed": 0.06415277853061416
+                },
+                {
+                  "lower": 0.1,
+                  "n": 827,
+                  "predicted": 0.15048040270953505,
+                  "observed": 0.12252371021552493
+                },
+                {
+                  "lower": 0.2,
+                  "n": 585,
+                  "predicted": 0.2506068950457597,
+                  "observed": 0.19559577595798447
+                },
+                {
+                  "lower": 0.3,
+                  "n": 615,
+                  "predicted": 0.350104909506453,
+                  "observed": 0.26042433677660204
+                },
+                {
+                  "lower": 0.4,
+                  "n": 726,
+                  "predicted": 0.4532770304210069,
+                  "observed": 0.3663717656990065
+                },
+                {
+                  "lower": 0.5,
+                  "n": 623,
+                  "predicted": 0.5451353426244158,
+                  "observed": 0.4677030086166587
+                },
+                {
+                  "lower": 0.6,
+                  "n": 343,
+                  "predicted": 0.643813374782312,
+                  "observed": 0.5788817917376484
+                },
+                {
+                  "lower": 0.7,
+                  "n": 151,
+                  "predicted": 0.7460499772852421,
+                  "observed": 0.6850581713440073
+                },
+                {
+                  "lower": 0.8,
+                  "n": 84,
+                  "predicted": 0.8492041233190316,
+                  "observed": 0.8364459530554422
+                },
+                {
+                  "lower": 0.9,
+                  "n": 24,
+                  "predicted": 0.9294850421033956,
+                  "observed": 0.9625535933746718
+                }
+              ]
+            },
+            "10": {
+              "n": 4265,
+              "mae": 0.11453810698291257,
+              "rmse": 0.14700010310416164,
+              "flight_weighted_mae": 0.11386377216278255,
+              "bias": 0.057873508614950685,
+              "severe_events": 914,
+              "severe_predicted": 1170,
+              "severe_recall": 0.7833698030634574,
+              "severe_precision": 0.611965811965812,
+              "calibration_mae": 0.05868107542138691,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 503,
+                  "predicted": 0.06315618889477576,
+                  "observed": 0.06500209542402942
+                },
+                {
+                  "lower": 0.1,
+                  "n": 777,
+                  "predicted": 0.15026042245168206,
+                  "observed": 0.12283166484727716
+                },
+                {
+                  "lower": 0.2,
+                  "n": 558,
+                  "predicted": 0.2502224817450508,
+                  "observed": 0.197191850797392
+                },
+                {
+                  "lower": 0.3,
+                  "n": 583,
+                  "predicted": 0.3498174305346014,
+                  "observed": 0.2569486217541846
+                },
+                {
+                  "lower": 0.4,
+                  "n": 674,
+                  "predicted": 0.4539176511470228,
+                  "observed": 0.35940574677455506
+                },
+                {
+                  "lower": 0.5,
+                  "n": 593,
+                  "predicted": 0.5453723156705022,
+                  "observed": 0.46746902714728017
+                },
+                {
+                  "lower": 0.6,
+                  "n": 329,
+                  "predicted": 0.6441329991835693,
+                  "observed": 0.5723093857123001
+                },
+                {
+                  "lower": 0.7,
+                  "n": 144,
+                  "predicted": 0.746008491693585,
+                  "observed": 0.6825957213398965
+                },
+                {
+                  "lower": 0.8,
+                  "n": 80,
+                  "predicted": 0.8498034607931908,
+                  "observed": 0.8392057507082142
+                },
+                {
+                  "lower": 0.9,
+                  "n": 24,
+                  "predicted": 0.9294850421033956,
+                  "observed": 0.9625535933746718
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "fold": "validation_september",
+      "split": "validation",
+      "fit_before": "2023-09-01 00:00:00",
+      "evaluation_end_exclusive": "2023-10-01 00:00:00",
+      "train_rows": 35735,
+      "evaluation_rows": 4368,
+      "max_training_label_available_at": "2023-08-31 23:00:00",
+      "out_of_time_residual_rows": 13639,
+      "models": {
+        "seasonal": {
+          "n": 4368,
+          "mae": 0.1419416778546704,
+          "rmse": 0.18299479063992366,
+          "flight_weighted_mae": 0.1359350645858339,
+          "bias": 0.05116603477797102,
+          "severe_events": 628,
+          "severe_predicted": 382,
+          "severe_recall": 0.31528662420382164,
+          "severe_precision": 0.518324607329843,
+          "calibration_mae": 0.051166034777971034,
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "n": 123,
+              "predicted": 0.08924645533935105,
+              "observed": 0.04685114445396607
+            },
+            {
+              "lower": 0.1,
+              "n": 1087,
+              "predicted": 0.1533564786281363,
+              "observed": 0.08763783279530434
+            },
+            {
+              "lower": 0.2,
+              "n": 1005,
+              "predicted": 0.2481306651778764,
+              "observed": 0.19770163288587345
+            },
+            {
+              "lower": 0.3,
+              "n": 937,
+              "predicted": 0.3498071879197086,
+              "observed": 0.3007043438420295
+            },
+            {
+              "lower": 0.4,
+              "n": 834,
+              "predicted": 0.44413095473917596,
+              "observed": 0.3916625729179855
+            },
+            {
+              "lower": 0.5,
+              "n": 368,
+              "predicted": 0.5336287932369564,
+              "observed": 0.5210685024237177
+            },
+            {
+              "lower": 0.6,
+              "n": 14,
+              "predicted": 0.6220779845178944,
+              "observed": 0.49557163890405675
+            }
+          ],
+          "fit_predict_seconds": 0.021619125036522746,
+          "denominator_sensitivity": {
+            "5": {
+              "n": 4209,
+              "mae": 0.13518489914295057,
+              "rmse": 0.17146414718695732,
+              "flight_weighted_mae": 0.13544853474486274,
+              "bias": 0.050710659007783286,
+              "severe_events": 582,
+              "severe_predicted": 366,
+              "severe_recall": 0.32646048109965636,
+              "severe_precision": 0.5191256830601093,
+              "calibration_mae": 0.0507106590077833,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 104,
+                  "predicted": 0.0898336314692847,
+                  "observed": 0.04579510353690218
+                },
+                {
+                  "lower": 0.1,
+                  "n": 1068,
+                  "predicted": 0.15392231215489197,
+                  "observed": 0.08826060322892866
+                },
+                {
+                  "lower": 0.2,
+                  "n": 991,
+                  "predicted": 0.2477541142320884,
+                  "observed": 0.1951969132697304
+                },
+                {
+                  "lower": 0.3,
+                  "n": 891,
+                  "predicted": 0.35012680766159826,
+                  "observed": 0.2993939059259053
+                },
+                {
+                  "lower": 0.4,
+                  "n": 789,
+                  "predicted": 0.4439846572906407,
+                  "observed": 0.3980522845123784
+                },
+                {
+                  "lower": 0.5,
+                  "n": 355,
+                  "predicted": 0.5333236481970041,
+                  "observed": 0.5251264100242108
+                },
+                {
+                  "lower": 0.6,
+                  "n": 11,
+                  "predicted": 0.6122355815391244,
+                  "observed": 0.4034548131506177
+                }
+              ]
+            },
+            "10": {
+              "n": 3928,
+              "mae": 0.13350399261611845,
+              "rmse": 0.16931987664518688,
+              "flight_weighted_mae": 0.1349884157361498,
+              "bias": 0.05114409067169743,
+              "severe_events": 544,
+              "severe_predicted": 352,
+              "severe_recall": 0.3382352941176471,
+              "severe_precision": 0.5227272727272727,
+              "calibration_mae": 0.05114409067169744,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 84,
+                  "predicted": 0.09091611704831898,
+                  "observed": 0.05112897172596051
+                },
+                {
+                  "lower": 0.1,
+                  "n": 952,
+                  "predicted": 0.1553959566288058,
+                  "observed": 0.09128653840961778
+                },
+                {
+                  "lower": 0.2,
+                  "n": 941,
+                  "predicted": 0.24716831669996733,
+                  "observed": 0.1916730578103179
+                },
+                {
+                  "lower": 0.3,
+                  "n": 848,
+                  "predicted": 0.3492909917077106,
+                  "observed": 0.2963560969103557
+                },
+                {
+                  "lower": 0.4,
+                  "n": 751,
+                  "predicted": 0.44344262494828046,
+                  "observed": 0.3968055271544141
+                },
+                {
+                  "lower": 0.5,
+                  "n": 342,
+                  "predicted": 0.5332100321746381,
+                  "observed": 0.5255663306503051
+                },
+                {
+                  "lower": 0.6,
+                  "n": 10,
+                  "predicted": 0.6084268983506624,
+                  "observed": 0.43130029446567947
+                }
+              ]
+            }
+          }
+        },
+        "rolling": {
+          "n": 4368,
+          "mae": 0.13588708647106448,
+          "rmse": 0.18649834244079908,
+          "flight_weighted_mae": 0.13012080593257083,
+          "bias": -0.04654995302496374,
+          "severe_events": 628,
+          "severe_predicted": 421,
+          "severe_recall": 0.428343949044586,
+          "severe_precision": 0.6389548693586699,
+          "calibration_mae": 0.060678678709197846,
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "n": 1441,
+              "predicted": 0.03407316345994783,
+              "observed": 0.1350868970573405
+            },
+            {
+              "lower": 0.1,
+              "n": 1197,
+              "predicted": 0.13966146235758997,
+              "observed": 0.17980758937601762
+            },
+            {
+              "lower": 0.2,
+              "n": 639,
+              "predicted": 0.24189220034326275,
+              "observed": 0.2973239128343685
+            },
+            {
+              "lower": 0.3,
+              "n": 414,
+              "predicted": 0.34575041002557055,
+              "observed": 0.3567101594582355
+            },
+            {
+              "lower": 0.4,
+              "n": 256,
+              "predicted": 0.44067739220408436,
+              "observed": 0.44307359144458563
+            },
+            {
+              "lower": 0.5,
+              "n": 189,
+              "predicted": 0.5374156436077747,
+              "observed": 0.514300325650997
+            },
+            {
+              "lower": 0.6,
+              "n": 103,
+              "predicted": 0.6391907537115766,
+              "observed": 0.6106146964915417
+            },
+            {
+              "lower": 0.7,
+              "n": 56,
+              "predicted": 0.744776566221694,
+              "observed": 0.5936592026679477
+            },
+            {
+              "lower": 0.8,
+              "n": 27,
+              "predicted": 0.8376100026075344,
+              "observed": 0.7218193788691913
+            },
+            {
+              "lower": 0.9,
+              "n": 46,
+              "predicted": 0.9772645623648808,
+              "observed": 0.7173495904751487
+            }
+          ],
+          "fit_predict_seconds": 0.000806041993200779,
+          "denominator_sensitivity": {
+            "5": {
+              "n": 4209,
+              "mae": 0.12969800906146528,
+              "rmse": 0.1742815823389462,
+              "flight_weighted_mae": 0.1296799235767996,
+              "bias": -0.04965831584653334,
+              "severe_events": 582,
+              "severe_predicted": 393,
+              "severe_recall": 0.44329896907216493,
+              "severe_precision": 0.6564885496183206,
+              "calibration_mae": 0.06042942288063552,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 1415,
+                  "predicted": 0.03326128540011919,
+                  "observed": 0.1354489177806556
+                },
+                {
+                  "lower": 0.1,
+                  "n": 1150,
+                  "predicted": 0.13956526056466306,
+                  "observed": 0.17911276911573312
+                },
+                {
+                  "lower": 0.2,
+                  "n": 618,
+                  "predicted": 0.24135670984110438,
+                  "observed": 0.29758357114535294
+                },
+                {
+                  "lower": 0.3,
+                  "n": 395,
+                  "predicted": 0.34500310547949026,
+                  "observed": 0.3605772304195176
+                },
+                {
+                  "lower": 0.4,
+                  "n": 238,
+                  "predicted": 0.44035983563590947,
+                  "observed": 0.4433200535426355
+                },
+                {
+                  "lower": 0.5,
+                  "n": 180,
+                  "predicted": 0.5373299997791059,
+                  "observed": 0.5302931197113245
+                },
+                {
+                  "lower": 0.6,
+                  "n": 97,
+                  "predicted": 0.6389424639708147,
+                  "observed": 0.6105839904325994
+                },
+                {
+                  "lower": 0.7,
+                  "n": 49,
+                  "predicted": 0.7432782749061174,
+                  "observed": 0.6223452112123483
+                },
+                {
+                  "lower": 0.8,
+                  "n": 24,
+                  "predicted": 0.8387758993981228,
+                  "observed": 0.7287134678945071
+                },
+                {
+                  "lower": 0.9,
+                  "n": 43,
+                  "predicted": 0.9786336533171147,
+                  "observed": 0.7441414223687638
+                }
+              ]
+            },
+            "10": {
+              "n": 3928,
+              "mae": 0.12869462399219936,
+              "rmse": 0.17340531054263755,
+              "flight_weighted_mae": 0.1294431166159065,
+              "bias": -0.05224344802489188,
+              "severe_events": 544,
+              "severe_predicted": 371,
+              "severe_recall": 0.44669117647058826,
+              "severe_precision": 0.6549865229110512,
+              "calibration_mae": 0.06457152500546083,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 1341,
+                  "predicted": 0.0329009305975501,
+                  "observed": 0.1355819369051353
+                },
+                {
+                  "lower": 0.1,
+                  "n": 1041,
+                  "predicted": 0.1407489890503832,
+                  "observed": 0.18877407441615762
+                },
+                {
+                  "lower": 0.2,
+                  "n": 589,
+                  "predicted": 0.24157900809342822,
+                  "observed": 0.29748143905390284
+                },
+                {
+                  "lower": 0.3,
+                  "n": 364,
+                  "predicted": 0.3446085937151461,
+                  "observed": 0.36880840654935015
+                },
+                {
+                  "lower": 0.4,
+                  "n": 222,
+                  "predicted": 0.4402614642591307,
+                  "observed": 0.43576904639055325
+                },
+                {
+                  "lower": 0.5,
+                  "n": 167,
+                  "predicted": 0.5371535934421037,
+                  "observed": 0.525256532413879
+                },
+                {
+                  "lower": 0.6,
+                  "n": 93,
+                  "predicted": 0.6401588381327473,
+                  "observed": 0.6161936790465292
+                },
+                {
+                  "lower": 0.7,
+                  "n": 46,
+                  "predicted": 0.7426644704712555,
+                  "observed": 0.6035385324404828
+                },
+                {
+                  "lower": 0.8,
+                  "n": 24,
+                  "predicted": 0.8387758993981228,
+                  "observed": 0.7287134678945071
+                },
+                {
+                  "lower": 0.9,
+                  "n": 41,
+                  "predicted": 0.9775913925033156,
+                  "observed": 0.7347092966306547
+                }
+              ]
+            }
+          }
+        },
+        "tabular": {
+          "n": 4368,
+          "mae": 0.10708558858170536,
+          "rmse": 0.14870186259539275,
+          "flight_weighted_mae": 0.09887941805610519,
+          "bias": 0.025803124706630102,
+          "severe_events": 628,
+          "severe_predicted": 515,
+          "severe_recall": 0.5557324840764332,
+          "severe_precision": 0.6776699029126214,
+          "calibration_mae": 0.025957943940568537,
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "n": 730,
+              "predicted": 0.0626897568832965,
+              "observed": 0.054846304007125306
+            },
+            {
+              "lower": 0.1,
+              "n": 1014,
+              "predicted": 0.1490315974628428,
+              "observed": 0.13187937250706375
+            },
+            {
+              "lower": 0.2,
+              "n": 852,
+              "predicted": 0.25029348283940983,
+              "observed": 0.22986027894065933
+            },
+            {
+              "lower": 0.3,
+              "n": 756,
+              "predicted": 0.34926676311371746,
+              "observed": 0.3046053693901774
+            },
+            {
+              "lower": 0.4,
+              "n": 501,
+              "predicted": 0.4445367830769087,
+              "observed": 0.3893964582984142
+            },
+            {
+              "lower": 0.5,
+              "n": 284,
+              "predicted": 0.5438284227308653,
+              "observed": 0.5257022982308992
+            },
+            {
+              "lower": 0.6,
+              "n": 124,
+              "predicted": 0.6429936098958029,
+              "observed": 0.6302946506439473
+            },
+            {
+              "lower": 0.7,
+              "n": 42,
+              "predicted": 0.7447215880129482,
+              "observed": 0.6573872596645677
+            },
+            {
+              "lower": 0.8,
+              "n": 44,
+              "predicted": 0.8561701086109061,
+              "observed": 0.8393710396539287
+            },
+            {
+              "lower": 0.9,
+              "n": 21,
+              "predicted": 0.9286900233564972,
+              "observed": 0.9447912236860931
+            }
+          ],
+          "fit_predict_seconds": 2.5260541669558734,
+          "denominator_sensitivity": {
+            "5": {
+              "n": 4209,
+              "mae": 0.09987741341351493,
+              "rmse": 0.13345191497587866,
+              "flight_weighted_mae": 0.09835133325030306,
+              "bias": 0.025356856824867383,
+              "severe_events": 582,
+              "severe_predicted": 498,
+              "severe_recall": 0.5824742268041238,
+              "severe_precision": 0.6807228915662651,
+              "calibration_mae": 0.025517524540201907,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 692,
+                  "predicted": 0.06354099318272885,
+                  "observed": 0.05496792185722757
+                },
+                {
+                  "lower": 0.1,
+                  "n": 1012,
+                  "predicted": 0.148999660879699,
+                  "observed": 0.13214000367802634
+                },
+                {
+                  "lower": 0.2,
+                  "n": 828,
+                  "predicted": 0.24974181080035748,
+                  "observed": 0.22384173630125812
+                },
+                {
+                  "lower": 0.3,
+                  "n": 699,
+                  "predicted": 0.3490840897153214,
+                  "observed": 0.3073891167271924
+                },
+                {
+                  "lower": 0.4,
+                  "n": 480,
+                  "predicted": 0.44481103339977907,
+                  "observed": 0.3968839422378588
+                },
+                {
+                  "lower": 0.5,
+                  "n": 276,
+                  "predicted": 0.5439253775188511,
+                  "observed": 0.5237299010781715
+                },
+                {
+                  "lower": 0.6,
+                  "n": 121,
+                  "predicted": 0.6431010562569176,
+                  "observed": 0.6266380441860838
+                },
+                {
+                  "lower": 0.7,
+                  "n": 37,
+                  "predicted": 0.7449548248427297,
+                  "observed": 0.6899170695291489
+                },
+                {
+                  "lower": 0.8,
+                  "n": 43,
+                  "predicted": 0.8559418236219171,
+                  "observed": 0.8356354824365781
+                },
+                {
+                  "lower": 0.9,
+                  "n": 21,
+                  "predicted": 0.9286900233564972,
+                  "observed": 0.9447912236860931
+                }
+              ]
+            },
+            "10": {
+              "n": 3928,
+              "mae": 0.0983120897228755,
+              "rmse": 0.13094466260594595,
+              "flight_weighted_mae": 0.09785413773206696,
+              "bias": 0.02637946778611481,
+              "severe_events": 544,
+              "severe_predicted": 481,
+              "severe_recall": 0.5955882352941176,
+              "severe_precision": 0.6735966735966736,
+              "calibration_mae": 0.02645922636316372,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 587,
+                  "predicted": 0.06498103376784403,
+                  "observed": 0.057218748040553054
+                },
+                {
+                  "lower": 0.1,
+                  "n": 970,
+                  "predicted": 0.14923951264540067,
+                  "observed": 0.13140923047776545
+                },
+                {
+                  "lower": 0.2,
+                  "n": 786,
+                  "predicted": 0.24989049463830365,
+                  "observed": 0.2242640117213706
+                },
+                {
+                  "lower": 0.3,
+                  "n": 652,
+                  "predicted": 0.3487977523711776,
+                  "observed": 0.3045256240460456
+                },
+                {
+                  "lower": 0.4,
+                  "n": 452,
+                  "predicted": 0.4451404988677253,
+                  "observed": 0.39683050334572445
+                },
+                {
+                  "lower": 0.5,
+                  "n": 269,
+                  "predicted": 0.5444214075380962,
+                  "observed": 0.5210429881363808
+                },
+                {
+                  "lower": 0.6,
+                  "n": 117,
+                  "predicted": 0.6429536855049566,
+                  "observed": 0.6293531150224551
+                },
+                {
+                  "lower": 0.7,
+                  "n": 34,
+                  "predicted": 0.7454584525147624,
+                  "observed": 0.6763173151598721
+                },
+                {
+                  "lower": 0.8,
+                  "n": 42,
+                  "predicted": 0.8549015280288036,
+                  "observed": 0.8346982320184014
+                },
+                {
+                  "lower": 0.9,
+                  "n": 19,
+                  "predicted": 0.9307352553728376,
+                  "observed": 0.938979773547787
+                }
+              ]
+            }
+          }
+        },
+        "temporal_residual": {
+          "n": 4368,
+          "mae": 0.10694104754484574,
+          "rmse": 0.14803274165023492,
+          "flight_weighted_mae": 0.09857411764353619,
+          "bias": 0.022833075899603955,
+          "severe_events": 628,
+          "severe_predicted": 474,
+          "severe_recall": 0.5191082802547771,
+          "severe_precision": 0.6877637130801688,
+          "calibration_mae": 0.023014287841905016,
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "n": 710,
+              "predicted": 0.06819651612165457,
+              "observed": 0.05465185163763655
+            },
+            {
+              "lower": 0.1,
+              "n": 1036,
+              "predicted": 0.1483122252596689,
+              "observed": 0.1319647776190087
+            },
+            {
+              "lower": 0.2,
+              "n": 895,
+              "predicted": 0.24949527523861187,
+              "observed": 0.22825427107957888
+            },
+            {
+              "lower": 0.3,
+              "n": 765,
+              "predicted": 0.34963662562622355,
+              "observed": 0.3126157926274123
+            },
+            {
+              "lower": 0.4,
+              "n": 488,
+              "predicted": 0.4459483580970577,
+              "observed": 0.405378584253156
+            },
+            {
+              "lower": 0.5,
+              "n": 259,
+              "predicted": 0.5435958381081316,
+              "observed": 0.5328111554295742
+            },
+            {
+              "lower": 0.6,
+              "n": 116,
+              "predicted": 0.639631439097975,
+              "observed": 0.6294632706253487
+            },
+            {
+              "lower": 0.7,
+              "n": 40,
+              "predicted": 0.7450552014059453,
+              "observed": 0.6890045965452265
+            },
+            {
+              "lower": 0.8,
+              "n": 45,
+              "predicted": 0.8525720691255135,
+              "observed": 0.8473826309292927
+            },
+            {
+              "lower": 0.9,
+              "n": 14,
+              "predicted": 0.923371338902962,
+              "observed": 0.9516404019019253
+            }
+          ],
+          "fit_predict_seconds": 8.771044249879196,
+          "denominator_sensitivity": {
+            "5": {
+              "n": 4209,
+              "mae": 0.09976689506416121,
+              "rmse": 0.13304613395403297,
+              "flight_weighted_mae": 0.09804075862396197,
+              "bias": 0.022534771438107296,
+              "severe_events": 582,
+              "severe_predicted": 459,
+              "severe_recall": 0.5446735395189003,
+              "severe_precision": 0.690631808278867,
+              "calibration_mae": 0.022722828877872307,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 672,
+                  "predicted": 0.0689313914844348,
+                  "observed": 0.05476609324809814
+                },
+                {
+                  "lower": 0.1,
+                  "n": 1034,
+                  "predicted": 0.1482657381294814,
+                  "observed": 0.13222002863954838
+                },
+                {
+                  "lower": 0.2,
+                  "n": 869,
+                  "predicted": 0.24893727807718513,
+                  "observed": 0.2241514069231566
+                },
+                {
+                  "lower": 0.3,
+                  "n": 706,
+                  "predicted": 0.34964783798976184,
+                  "observed": 0.31407140891402796
+                },
+                {
+                  "lower": 0.4,
+                  "n": 469,
+                  "predicted": 0.44630634301925054,
+                  "observed": 0.41202860507933226
+                },
+                {
+                  "lower": 0.5,
+                  "n": 251,
+                  "predicted": 0.5437689710101018,
+                  "observed": 0.5268848177540228
+                },
+                {
+                  "lower": 0.6,
+                  "n": 114,
+                  "predicted": 0.63958402543732,
+                  "observed": 0.6375825092912907
+                },
+                {
+                  "lower": 0.7,
+                  "n": 35,
+                  "predicted": 0.7479818938614885,
+                  "observed": 0.6993385865278778
+                },
+                {
+                  "lower": 0.8,
+                  "n": 45,
+                  "predicted": 0.8525720691255135,
+                  "observed": 0.8473826309292927
+                },
+                {
+                  "lower": 0.9,
+                  "n": 14,
+                  "predicted": 0.923371338902962,
+                  "observed": 0.9516404019019253
+                }
+              ]
+            },
+            "10": {
+              "n": 3928,
+              "mae": 0.09808807910051623,
+              "rmse": 0.1305266466098921,
+              "flight_weighted_mae": 0.09751218022459063,
+              "bias": 0.02334750257318587,
+              "severe_events": 544,
+              "severe_predicted": 443,
+              "severe_recall": 0.5569852941176471,
+              "severe_precision": 0.6839729119638827,
+              "calibration_mae": 0.023549013205561402,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 567,
+                  "predicted": 0.06998811394703146,
+                  "observed": 0.05705893798470039
+                },
+                {
+                  "lower": 0.1,
+                  "n": 992,
+                  "predicted": 0.1484759980612756,
+                  "observed": 0.1315088502566158
+                },
+                {
+                  "lower": 0.2,
+                  "n": 824,
+                  "predicted": 0.2489959527938573,
+                  "observed": 0.2242264230779406
+                },
+                {
+                  "lower": 0.3,
+                  "n": 658,
+                  "predicted": 0.3491648302090125,
+                  "observed": 0.31243771712447854
+                },
+                {
+                  "lower": 0.4,
+                  "n": 444,
+                  "predicted": 0.4465601781136169,
+                  "observed": 0.41042682662230184
+                },
+                {
+                  "lower": 0.5,
+                  "n": 245,
+                  "predicted": 0.5443484246462643,
+                  "observed": 0.5245953756491326
+                },
+                {
+                  "lower": 0.6,
+                  "n": 109,
+                  "predicted": 0.639604252634744,
+                  "observed": 0.6394084144065894
+                },
+                {
+                  "lower": 0.7,
+                  "n": 33,
+                  "predicted": 0.7486055292158819,
+                  "observed": 0.6892335657979656
+                },
+                {
+                  "lower": 0.8,
+                  "n": 42,
+                  "predicted": 0.8514253063517542,
+                  "observed": 0.8394575807575757
+                },
+                {
+                  "lower": 0.9,
+                  "n": 14,
+                  "predicted": 0.923371338902962,
+                  "observed": 0.9516404019019253
+                }
+              ]
+            }
+          }
+        },
+        "graph_residual": {
+          "n": 4368,
+          "mae": 0.10512717066510727,
+          "rmse": 0.14636225975878006,
+          "flight_weighted_mae": 0.09680120795501741,
+          "bias": 0.019011158352154122,
+          "severe_events": 628,
+          "severe_predicted": 464,
+          "severe_recall": 0.5207006369426752,
+          "severe_precision": 0.7047413793103449,
+          "calibration_mae": 0.020628872031431843,
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "n": 800,
+              "predicted": 0.06184101759257541,
+              "observed": 0.057800380480881215
+            },
+            {
+              "lower": 0.1,
+              "n": 962,
+              "predicted": 0.14730432320739284,
+              "observed": 0.13522075669823747
+            },
+            {
+              "lower": 0.2,
+              "n": 858,
+              "predicted": 0.250432612664536,
+              "observed": 0.2275387284003252
+            },
+            {
+              "lower": 0.3,
+              "n": 761,
+              "predicted": 0.34912038099177606,
+              "observed": 0.3029701162888487
+            },
+            {
+              "lower": 0.4,
+              "n": 523,
+              "predicted": 0.4458165117914258,
+              "observed": 0.4168138887877755
+            },
+            {
+              "lower": 0.5,
+              "n": 268,
+              "predicted": 0.5455780974521558,
+              "observed": 0.5440824755006803
+            },
+            {
+              "lower": 0.6,
+              "n": 109,
+              "predicted": 0.6415154640389182,
+              "observed": 0.6288143352768649
+            },
+            {
+              "lower": 0.7,
+              "n": 47,
+              "predicted": 0.7459830349060392,
+              "observed": 0.7720503700655358
+            },
+            {
+              "lower": 0.8,
+              "n": 36,
+              "predicted": 0.8354945652178161,
+              "observed": 0.8907463026848144
+            },
+            {
+              "lower": 0.9,
+              "n": 4,
+              "predicted": 0.9202851564414314,
+              "observed": 1.0
+            }
+          ],
+          "fit_predict_seconds": 8.784322707913816,
+          "denominator_sensitivity": {
+            "5": {
+              "n": 4209,
+              "mae": 0.09800958743138798,
+              "rmse": 0.1314408490922198,
+              "flight_weighted_mae": 0.09628044446546352,
+              "bias": 0.018360903424449557,
+              "severe_events": 582,
+              "severe_predicted": 449,
+              "severe_recall": 0.5463917525773195,
+              "severe_precision": 0.7082405345211581,
+              "calibration_mae": 0.02002798684351569,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 762,
+                  "predicted": 0.06279787711722945,
+                  "observed": 0.05805814223714563
+                },
+                {
+                  "lower": 0.1,
+                  "n": 960,
+                  "predicted": 0.1472357045048559,
+                  "observed": 0.13550246660802548
+                },
+                {
+                  "lower": 0.2,
+                  "n": 843,
+                  "predicted": 0.25006523566454586,
+                  "observed": 0.22565626212037845
+                },
+                {
+                  "lower": 0.3,
+                  "n": 697,
+                  "predicted": 0.3490458178765284,
+                  "observed": 0.3031711025764904
+                },
+                {
+                  "lower": 0.4,
+                  "n": 498,
+                  "predicted": 0.4460624685852118,
+                  "observed": 0.42318004786346697
+                },
+                {
+                  "lower": 0.5,
+                  "n": 259,
+                  "predicted": 0.5455380035801498,
+                  "observed": 0.5407880441474221
+                },
+                {
+                  "lower": 0.6,
+                  "n": 104,
+                  "predicted": 0.6404884885913306,
+                  "observed": 0.6334047680626116
+                },
+                {
+                  "lower": 0.7,
+                  "n": 46,
+                  "predicted": 0.7464328752326467,
+                  "observed": 0.7725297259365259
+                },
+                {
+                  "lower": 0.8,
+                  "n": 36,
+                  "predicted": 0.8354945652178161,
+                  "observed": 0.8907463026848144
+                },
+                {
+                  "lower": 0.9,
+                  "n": 4,
+                  "predicted": 0.9202851564414314,
+                  "observed": 1.0
+                }
+              ]
+            },
+            "10": {
+              "n": 3928,
+              "mae": 0.09630056665714906,
+              "rmse": 0.12895937388929268,
+              "flight_weighted_mae": 0.09573272338205492,
+              "bias": 0.018761809578201057,
+              "severe_events": 544,
+              "severe_predicted": 430,
+              "severe_recall": 0.5551470588235294,
+              "severe_precision": 0.7023255813953488,
+              "calibration_mae": 0.02025288559213763,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 658,
+                  "predicted": 0.06419362978327188,
+                  "observed": 0.06068809225253084
+                },
+                {
+                  "lower": 0.1,
+                  "n": 918,
+                  "predicted": 0.147513347529629,
+                  "observed": 0.13524594841189233
+                },
+                {
+                  "lower": 0.2,
+                  "n": 803,
+                  "predicted": 0.2504837233542471,
+                  "observed": 0.2259953433543098
+                },
+                {
+                  "lower": 0.3,
+                  "n": 654,
+                  "predicted": 0.3487324901774986,
+                  "observed": 0.3046519898363252
+                },
+                {
+                  "lower": 0.4,
+                  "n": 465,
+                  "predicted": 0.4465694454412036,
+                  "observed": 0.4208363482392359
+                },
+                {
+                  "lower": 0.5,
+                  "n": 248,
+                  "predicted": 0.5459521346440684,
+                  "observed": 0.5389809598280522
+                },
+                {
+                  "lower": 0.6,
+                  "n": 101,
+                  "predicted": 0.6400325068453745,
+                  "observed": 0.6314266918664516
+                },
+                {
+                  "lower": 0.7,
+                  "n": 44,
+                  "predicted": 0.746659545403329,
+                  "observed": 0.7682778303622121
+                },
+                {
+                  "lower": 0.8,
+                  "n": 33,
+                  "predicted": 0.834347197506273,
+                  "observed": 0.8846020271713126
+                },
+                {
+                  "lower": 0.9,
+                  "n": 4,
+                  "predicted": 0.9202851564414314,
+                  "observed": 1.0
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "fold": "heldout_oct_dec",
+      "split": "test",
+      "fit_before": "2023-10-01 00:00:00",
+      "evaluation_end_exclusive": "2024-01-01 00:00:00",
+      "train_rows": 40103,
+      "evaluation_rows": 13492,
+      "max_training_label_available_at": "2023-09-30 23:00:00",
+      "out_of_time_residual_rows": 18007,
+      "models": {
+        "seasonal": {
+          "n": 13492,
+          "mae": 0.1462367586480638,
+          "rmse": 0.18691725091270897,
+          "flight_weighted_mae": 0.14313679120635275,
+          "bias": 0.06959607908134832,
+          "severe_events": 1464,
+          "severe_predicted": 1071,
+          "severe_recall": 0.22199453551912568,
+          "severe_precision": 0.3034547152194211,
+          "calibration_mae": 0.06959607908134832,
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "n": 581,
+              "predicted": 0.08853503179358971,
+              "observed": 0.05159579776080556
+            },
+            {
+              "lower": 0.1,
+              "n": 3434,
+              "predicted": 0.15301231491467396,
+              "observed": 0.10457910555042664
+            },
+            {
+              "lower": 0.2,
+              "n": 3046,
+              "predicted": 0.2505022968805714,
+              "observed": 0.19612527215458248
+            },
+            {
+              "lower": 0.3,
+              "n": 2863,
+              "predicted": 0.35076032227864534,
+              "observed": 0.28285614131328285
+            },
+            {
+              "lower": 0.4,
+              "n": 2497,
+              "predicted": 0.4424717734872349,
+              "observed": 0.3429641734115406
+            },
+            {
+              "lower": 0.5,
+              "n": 1028,
+              "predicted": 0.5336892004932448,
+              "observed": 0.3997336975534186
+            },
+            {
+              "lower": 0.6,
+              "n": 43,
+              "predicted": 0.6223375756795576,
+              "observed": 0.5062877802066804
+            }
+          ],
+          "fit_predict_seconds": 0.025134416995570064,
+          "denominator_sensitivity": {
+            "5": {
+              "n": 13087,
+              "mae": 0.14080128672841624,
+              "rmse": 0.17785614795618943,
+              "flight_weighted_mae": 0.14270643976352568,
+              "bias": 0.06969824009411964,
+              "severe_events": 1345,
+              "severe_predicted": 1031,
+              "severe_recall": 0.22973977695167286,
+              "severe_precision": 0.2997090203685742,
+              "calibration_mae": 0.06969824009411962,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 550,
+                  "predicted": 0.08871341738696363,
+                  "observed": 0.05389786393762673
+                },
+                {
+                  "lower": 0.1,
+                  "n": 3412,
+                  "predicted": 0.153161672706186,
+                  "observed": 0.10459397668820782
+                },
+                {
+                  "lower": 0.2,
+                  "n": 3014,
+                  "predicted": 0.2502641083988604,
+                  "observed": 0.19428143518564192
+                },
+                {
+                  "lower": 0.3,
+                  "n": 2683,
+                  "predicted": 0.3510419472418374,
+                  "observed": 0.2802461669449356
+                },
+                {
+                  "lower": 0.4,
+                  "n": 2397,
+                  "predicted": 0.4421767124693571,
+                  "observed": 0.34513901029423594
+                },
+                {
+                  "lower": 0.5,
+                  "n": 990,
+                  "predicted": 0.533196017937942,
+                  "observed": 0.40009384621371824
+                },
+                {
+                  "lower": 0.6,
+                  "n": 41,
+                  "predicted": 0.6220080909311961,
+                  "observed": 0.5187896231435916
+                }
+              ]
+            },
+            "10": {
+              "n": 12282,
+              "mae": 0.1395590386836536,
+              "rmse": 0.17617934644682295,
+              "flight_weighted_mae": 0.14240465933555557,
+              "bias": 0.06987002331050214,
+              "severe_events": 1238,
+              "severe_predicted": 996,
+              "severe_recall": 0.2382875605815832,
+              "severe_precision": 0.2961847389558233,
+              "calibration_mae": 0.06987002331050214,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 444,
+                  "predicted": 0.08892706319329802,
+                  "observed": 0.055714142193578085
+                },
+                {
+                  "lower": 0.1,
+                  "n": 3279,
+                  "predicted": 0.15413417795620776,
+                  "observed": 0.10552604042555754
+                },
+                {
+                  "lower": 0.2,
+                  "n": 2782,
+                  "predicted": 0.24966888621208663,
+                  "observed": 0.19418782009014907
+                },
+                {
+                  "lower": 0.3,
+                  "n": 2513,
+                  "predicted": 0.3510707714810981,
+                  "observed": 0.27917451065592574
+                },
+                {
+                  "lower": 0.4,
+                  "n": 2268,
+                  "predicted": 0.4420332254221548,
+                  "observed": 0.34548365865697256
+                },
+                {
+                  "lower": 0.5,
+                  "n": 965,
+                  "predicted": 0.533431556025085,
+                  "observed": 0.4020536752750984
+                },
+                {
+                  "lower": 0.6,
+                  "n": 31,
+                  "predicted": 0.6111785920127494,
+                  "observed": 0.5068784416691741
+                }
+              ]
+            }
+          }
+        },
+        "rolling": {
+          "n": 13492,
+          "mae": 0.12217296436641939,
+          "rmse": 0.16651877152254374,
+          "flight_weighted_mae": 0.11680583830342162,
+          "bias": -0.03890363535436636,
+          "severe_events": 1464,
+          "severe_predicted": 963,
+          "severe_recall": 0.3948087431693989,
+          "severe_precision": 0.6002076843198338,
+          "calibration_mae": 0.05405624056664353,
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "n": 4810,
+              "predicted": 0.03850648625454757,
+              "observed": 0.1252470581375296
+            },
+            {
+              "lower": 0.1,
+              "n": 3683,
+              "predicted": 0.1390192608359204,
+              "observed": 0.17346080467972774
+            },
+            {
+              "lower": 0.2,
+              "n": 2052,
+              "predicted": 0.2427225904782204,
+              "observed": 0.2831889482897441
+            },
+            {
+              "lower": 0.3,
+              "n": 1236,
+              "predicted": 0.3426513163351991,
+              "observed": 0.3368723240616725
+            },
+            {
+              "lower": 0.4,
+              "n": 748,
+              "predicted": 0.43716279591974333,
+              "observed": 0.40938268843192366
+            },
+            {
+              "lower": 0.5,
+              "n": 481,
+              "predicted": 0.5365019962105111,
+              "observed": 0.4797160122788873
+            },
+            {
+              "lower": 0.6,
+              "n": 217,
+              "predicted": 0.6422406686121915,
+              "observed": 0.5479444570981254
+            },
+            {
+              "lower": 0.7,
+              "n": 136,
+              "predicted": 0.7422305022465941,
+              "observed": 0.6594914448934004
+            },
+            {
+              "lower": 0.8,
+              "n": 64,
+              "predicted": 0.8386449430950039,
+              "observed": 0.7767200225884504
+            },
+            {
+              "lower": 0.9,
+              "n": 65,
+              "predicted": 0.964012715244898,
+              "observed": 0.7900884532612554
+            }
+          ],
+          "fit_predict_seconds": 0.0036799999652430415,
+          "denominator_sensitivity": {
+            "5": {
+              "n": 13087,
+              "mae": 0.117832859800174,
+              "rmse": 0.15797141488410865,
+              "flight_weighted_mae": 0.11644269936734665,
+              "bias": -0.03958263102983373,
+              "severe_events": 1345,
+              "severe_predicted": 904,
+              "severe_recall": 0.4029739776951673,
+              "severe_precision": 0.5995575221238938,
+              "calibration_mae": 0.05398293075641434,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 4721,
+                  "predicted": 0.038094477752768204,
+                  "observed": 0.1256312256530786
+                },
+                {
+                  "lower": 0.1,
+                  "n": 3598,
+                  "predicted": 0.13907652371347445,
+                  "observed": 0.17237061616697347
+                },
+                {
+                  "lower": 0.2,
+                  "n": 1972,
+                  "predicted": 0.24272849889822284,
+                  "observed": 0.2828872829059609
+                },
+                {
+                  "lower": 0.3,
+                  "n": 1180,
+                  "predicted": 0.34265958457465695,
+                  "observed": 0.3389470558250513
+                },
+                {
+                  "lower": 0.4,
+                  "n": 712,
+                  "predicted": 0.4372943530379602,
+                  "observed": 0.40831215020657147
+                },
+                {
+                  "lower": 0.5,
+                  "n": 454,
+                  "predicted": 0.5370581911640048,
+                  "observed": 0.48291498217212525
+                },
+                {
+                  "lower": 0.6,
+                  "n": 205,
+                  "predicted": 0.6423083405003944,
+                  "observed": 0.5535964903591539
+                },
+                {
+                  "lower": 0.7,
+                  "n": 127,
+                  "predicted": 0.7419451757476011,
+                  "observed": 0.6537336207782344
+                },
+                {
+                  "lower": 0.8,
+                  "n": 61,
+                  "predicted": 0.8394038278842195,
+                  "observed": 0.7657390400928005
+                },
+                {
+                  "lower": 0.9,
+                  "n": 57,
+                  "predicted": 0.9667479418372731,
+                  "observed": 0.7781710431926597
+                }
+              ]
+            },
+            "10": {
+              "n": 12282,
+              "mae": 0.11607866540084112,
+              "rmse": 0.15562545477921433,
+              "flight_weighted_mae": 0.11590009757751558,
+              "bias": -0.04182129093856549,
+              "severe_events": 1238,
+              "severe_predicted": 832,
+              "severe_recall": 0.40306946688206785,
+              "severe_precision": 0.5997596153846154,
+              "calibration_mae": 0.05473573534937976,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 4465,
+                  "predicted": 0.03722916956844027,
+                  "observed": 0.12672013731995094
+                },
+                {
+                  "lower": 0.1,
+                  "n": 3361,
+                  "predicted": 0.13949912323365452,
+                  "observed": 0.17387829609022518
+                },
+                {
+                  "lower": 0.2,
+                  "n": 1849,
+                  "predicted": 0.24269294813649478,
+                  "observed": 0.2847865811558797
+                },
+                {
+                  "lower": 0.3,
+                  "n": 1102,
+                  "predicted": 0.34269259797920254,
+                  "observed": 0.3423371522201238
+                },
+                {
+                  "lower": 0.4,
+                  "n": 673,
+                  "predicted": 0.43764729267673724,
+                  "observed": 0.4106741859399035
+                },
+                {
+                  "lower": 0.5,
+                  "n": 417,
+                  "predicted": 0.5368461190214783,
+                  "observed": 0.4860048844766901
+                },
+                {
+                  "lower": 0.6,
+                  "n": 188,
+                  "predicted": 0.642110153588611,
+                  "observed": 0.5568725661084494
+                },
+                {
+                  "lower": 0.7,
+                  "n": 118,
+                  "predicted": 0.7417873054034165,
+                  "observed": 0.6537089991722698
+                },
+                {
+                  "lower": 0.8,
+                  "n": 57,
+                  "predicted": 0.8397610280522211,
+                  "observed": 0.7746408050895661
+                },
+                {
+                  "lower": 0.9,
+                  "n": 52,
+                  "predicted": 0.9647913233414772,
+                  "observed": 0.783398112364115
+                }
+              ]
+            }
+          }
+        },
+        "tabular": {
+          "n": 13492,
+          "mae": 0.10160406375536797,
+          "rmse": 0.1380596527473836,
+          "flight_weighted_mae": 0.09532754807988994,
+          "bias": 0.014226065242422127,
+          "severe_events": 1464,
+          "severe_predicted": 827,
+          "severe_recall": 0.3879781420765027,
+          "severe_precision": 0.686819830713422,
+          "calibration_mae": 0.014978455349794688,
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "n": 2353,
+              "predicted": 0.06364703452968341,
+              "observed": 0.06206551781485871
+            },
+            {
+              "lower": 0.1,
+              "n": 3830,
+              "predicted": 0.14941221011158928,
+              "observed": 0.13896351656186468
+            },
+            {
+              "lower": 0.2,
+              "n": 3177,
+              "predicted": 0.24781382764952672,
+              "observed": 0.22909966905648896
+            },
+            {
+              "lower": 0.3,
+              "n": 2136,
+              "predicted": 0.3460035841066644,
+              "observed": 0.32390098585491944
+            },
+            {
+              "lower": 0.4,
+              "n": 1169,
+              "predicted": 0.4423017019275238,
+              "observed": 0.4116035861183072
+            },
+            {
+              "lower": 0.5,
+              "n": 462,
+              "predicted": 0.5443251554713691,
+              "observed": 0.522043297394935
+            },
+            {
+              "lower": 0.6,
+              "n": 197,
+              "predicted": 0.6432413394620413,
+              "observed": 0.6410710690987327
+            },
+            {
+              "lower": 0.7,
+              "n": 101,
+              "predicted": 0.740463341157555,
+              "observed": 0.7688730538207771
+            },
+            {
+              "lower": 0.8,
+              "n": 41,
+              "predicted": 0.8446611319467656,
+              "observed": 0.8713824190876053
+            },
+            {
+              "lower": 0.9,
+              "n": 26,
+              "predicted": 0.934190970124759,
+              "observed": 0.9769090436853595
+            }
+          ],
+          "fit_predict_seconds": 2.872797584044747,
+          "denominator_sensitivity": {
+            "5": {
+              "n": 13087,
+              "mae": 0.09638198248678971,
+              "rmse": 0.1265907110593437,
+              "flight_weighted_mae": 0.09488889424012961,
+              "bias": 0.01579641579327093,
+              "severe_events": 1345,
+              "severe_predicted": 805,
+              "severe_recall": 0.4096654275092937,
+              "severe_precision": 0.684472049689441,
+              "calibration_mae": 0.016416627351623067,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 2306,
+                  "predicted": 0.06394572185346216,
+                  "observed": 0.06264389856245847
+                },
+                {
+                  "lower": 0.1,
+                  "n": 3735,
+                  "predicted": 0.1490698648376973,
+                  "observed": 0.13709868855830656
+                },
+                {
+                  "lower": 0.2,
+                  "n": 3023,
+                  "predicted": 0.2479138842598757,
+                  "observed": 0.2274836195586499
+                },
+                {
+                  "lower": 0.3,
+                  "n": 2069,
+                  "predicted": 0.34608288195944886,
+                  "observed": 0.3198497691893545
+                },
+                {
+                  "lower": 0.4,
+                  "n": 1149,
+                  "predicted": 0.4426455995429301,
+                  "observed": 0.41071766072436994
+                },
+                {
+                  "lower": 0.5,
+                  "n": 456,
+                  "predicted": 0.5446641105705526,
+                  "observed": 0.5219678437056873
+                },
+                {
+                  "lower": 0.6,
+                  "n": 190,
+                  "predicted": 0.6431743296820761,
+                  "observed": 0.6436368453286859
+                },
+                {
+                  "lower": 0.7,
+                  "n": 97,
+                  "predicted": 0.7396973562122481,
+                  "observed": 0.7627784718477506
+                },
+                {
+                  "lower": 0.8,
+                  "n": 36,
+                  "predicted": 0.8455298412756466,
+                  "observed": 0.8627781254423653
+                },
+                {
+                  "lower": 0.9,
+                  "n": 26,
+                  "predicted": 0.934190970124759,
+                  "observed": 0.9769090436853595
+                }
+              ]
+            },
+            "10": {
+              "n": 12282,
+              "mae": 0.09472504575186268,
+              "rmse": 0.12433128381171003,
+              "flight_weighted_mae": 0.09436980867394226,
+              "bias": 0.01619620309588048,
+              "severe_events": 1238,
+              "severe_predicted": 773,
+              "severe_recall": 0.42326332794830374,
+              "severe_precision": 0.6778783958602846,
+              "calibration_mae": 0.01680084222550221,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 2104,
+                  "predicted": 0.06526515248864391,
+                  "observed": 0.06391212728104322
+                },
+                {
+                  "lower": 0.1,
+                  "n": 3561,
+                  "predicted": 0.1483161954257736,
+                  "observed": 0.13667523350945796
+                },
+                {
+                  "lower": 0.2,
+                  "n": 2788,
+                  "predicted": 0.24781876429343666,
+                  "observed": 0.22868844288062964
+                },
+                {
+                  "lower": 0.3,
+                  "n": 1954,
+                  "predicted": 0.34653501206856746,
+                  "observed": 0.31921563308902207
+                },
+                {
+                  "lower": 0.4,
+                  "n": 1102,
+                  "predicted": 0.44269573988475736,
+                  "observed": 0.406462914568821
+                },
+                {
+                  "lower": 0.5,
+                  "n": 436,
+                  "predicted": 0.5441796667680331,
+                  "observed": 0.5173708393030793
+                },
+                {
+                  "lower": 0.6,
+                  "n": 186,
+                  "predicted": 0.6436447308860533,
+                  "observed": 0.6437389519187892
+                },
+                {
+                  "lower": 0.7,
+                  "n": 91,
+                  "predicted": 0.7403305720846608,
+                  "observed": 0.7600801049121932
+                },
+                {
+                  "lower": 0.8,
+                  "n": 35,
+                  "predicted": 0.8462921494987927,
+                  "observed": 0.871555913153417
+                },
+                {
+                  "lower": 0.9,
+                  "n": 25,
+                  "predicted": 0.935420422724745,
+                  "observed": 0.9759854054327739
+                }
+              ]
+            }
+          }
+        },
+        "temporal_residual": {
+          "n": 13492,
+          "mae": 0.10031494238839346,
+          "rmse": 0.13742916925444248,
+          "flight_weighted_mae": 0.09365579609735804,
+          "bias": 0.006983420232502612,
+          "severe_events": 1464,
+          "severe_predicted": 750,
+          "severe_recall": 0.36543715846994534,
+          "severe_precision": 0.7133333333333334,
+          "calibration_mae": 0.00866154131798099,
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "n": 2532,
+              "predicted": 0.06568269229177677,
+              "observed": 0.06405905445354106
+            },
+            {
+              "lower": 0.1,
+              "n": 3884,
+              "predicted": 0.14848182094304324,
+              "observed": 0.14548970946183665
+            },
+            {
+              "lower": 0.2,
+              "n": 3178,
+              "predicted": 0.24699046631243776,
+              "observed": 0.23451896041872164
+            },
+            {
+              "lower": 0.3,
+              "n": 2093,
+              "predicted": 0.34593469007926997,
+              "observed": 0.33158350755117855
+            },
+            {
+              "lower": 0.4,
+              "n": 1055,
+              "predicted": 0.44236945898148905,
+              "observed": 0.4249999431693534
+            },
+            {
+              "lower": 0.5,
+              "n": 423,
+              "predicted": 0.5437103689364742,
+              "observed": 0.5394262349487322
+            },
+            {
+              "lower": 0.6,
+              "n": 186,
+              "predicted": 0.642255606694854,
+              "observed": 0.6663300563513449
+            },
+            {
+              "lower": 0.7,
+              "n": 87,
+              "predicted": 0.7414906519521117,
+              "observed": 0.776408137729024
+            },
+            {
+              "lower": 0.8,
+              "n": 39,
+              "predicted": 0.8506994149183933,
+              "observed": 0.927696628300723
+            },
+            {
+              "lower": 0.9,
+              "n": 15,
+              "predicted": 0.9193487470954932,
+              "observed": 0.9728183885640026
+            }
+          ],
+          "fit_predict_seconds": 10.732158668106422,
+          "denominator_sensitivity": {
+            "5": {
+              "n": 13087,
+              "mae": 0.09498547513824107,
+              "rmse": 0.1255120477965788,
+              "flight_weighted_mae": 0.09320603636558886,
+              "bias": 0.008815068925729481,
+              "severe_events": 1345,
+              "severe_predicted": 733,
+              "severe_recall": 0.387360594795539,
+              "severe_precision": 0.7107776261937244,
+              "calibration_mae": 0.010240428670130008,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 2485,
+                  "predicted": 0.06597811204092628,
+                  "observed": 0.06463347788452016
+                },
+                {
+                  "lower": 0.1,
+                  "n": 3768,
+                  "predicted": 0.14812803583320397,
+                  "observed": 0.14267039053868724
+                },
+                {
+                  "lower": 0.2,
+                  "n": 3034,
+                  "predicted": 0.24707492942724388,
+                  "observed": 0.23367433186465525
+                },
+                {
+                  "lower": 0.3,
+                  "n": 2026,
+                  "predicted": 0.34603285793560035,
+                  "observed": 0.3268777301602255
+                },
+                {
+                  "lower": 0.4,
+                  "n": 1041,
+                  "predicted": 0.4423768337537014,
+                  "observed": 0.42471175796702
+                },
+                {
+                  "lower": 0.5,
+                  "n": 414,
+                  "predicted": 0.5437344849798873,
+                  "observed": 0.536660138607038
+                },
+                {
+                  "lower": 0.6,
+                  "n": 180,
+                  "predicted": 0.6426893342898783,
+                  "observed": 0.6570595767482416
+                },
+                {
+                  "lower": 0.7,
+                  "n": 86,
+                  "predicted": 0.741321605031833,
+                  "observed": 0.7776842013460282
+                },
+                {
+                  "lower": 0.8,
+                  "n": 38,
+                  "predicted": 0.8518210148367688,
+                  "observed": 0.9257939079928473
+                },
+                {
+                  "lower": 0.9,
+                  "n": 15,
+                  "predicted": 0.9193487470954932,
+                  "observed": 0.9728183885640026
+                }
+              ]
+            },
+            "10": {
+              "n": 12282,
+              "mae": 0.09325682398028098,
+              "rmse": 0.12317543437260554,
+              "flight_weighted_mae": 0.09265794904031499,
+              "bias": 0.009120640001674436,
+              "severe_events": 1238,
+              "severe_predicted": 702,
+              "severe_recall": 0.3990306946688207,
+              "severe_precision": 0.7037037037037037,
+              "calibration_mae": 0.010544828527686099,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 2283,
+                  "predicted": 0.06720599198172748,
+                  "observed": 0.06606087180061777
+                },
+                {
+                  "lower": 0.1,
+                  "n": 3573,
+                  "predicted": 0.1473524744955816,
+                  "observed": 0.1422557096550217
+                },
+                {
+                  "lower": 0.2,
+                  "n": 2800,
+                  "predicted": 0.2468381922015619,
+                  "observed": 0.23423273322717647
+                },
+                {
+                  "lower": 0.3,
+                  "n": 1924,
+                  "predicted": 0.3462737599970172,
+                  "observed": 0.32600336371143823
+                },
+                {
+                  "lower": 0.4,
+                  "n": 1000,
+                  "predicted": 0.4425312751623355,
+                  "observed": 0.4214574797262075
+                },
+                {
+                  "lower": 0.5,
+                  "n": 395,
+                  "predicted": 0.543669266091786,
+                  "observed": 0.5320964329977402
+                },
+                {
+                  "lower": 0.6,
+                  "n": 173,
+                  "predicted": 0.6428219309649784,
+                  "observed": 0.6570562070212919
+                },
+                {
+                  "lower": 0.7,
+                  "n": 82,
+                  "predicted": 0.7408185961227919,
+                  "observed": 0.7749696095417694
+                },
+                {
+                  "lower": 0.8,
+                  "n": 37,
+                  "predicted": 0.8513293039355849,
+                  "observed": 0.9237883379385999
+                },
+                {
+                  "lower": 0.9,
+                  "n": 15,
+                  "predicted": 0.9193487470954932,
+                  "observed": 0.9728183885640026
+                }
+              ]
+            }
+          }
+        },
+        "graph_residual": {
+          "n": 13492,
+          "mae": 0.09855012230177448,
+          "rmse": 0.13559080882645808,
+          "flight_weighted_mae": 0.09172062377425254,
+          "bias": 0.004499916844174726,
+          "severe_events": 1464,
+          "severe_predicted": 711,
+          "severe_recall": 0.36270491803278687,
+          "severe_precision": 0.7468354430379747,
+          "calibration_mae": 0.010924578470402048,
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "n": 2822,
+              "predicted": 0.059937497118764047,
+              "observed": 0.06673304442431117
+            },
+            {
+              "lower": 0.1,
+              "n": 3543,
+              "predicted": 0.1486445846221204,
+              "observed": 0.14383600295549726
+            },
+            {
+              "lower": 0.2,
+              "n": 3137,
+              "predicted": 0.24798626425407103,
+              "observed": 0.2342142355593044
+            },
+            {
+              "lower": 0.3,
+              "n": 2171,
+              "predicted": 0.34515133751856625,
+              "observed": 0.3325500571044023
+            },
+            {
+              "lower": 0.4,
+              "n": 1108,
+              "predicted": 0.4438866612667651,
+              "observed": 0.4290341280964977
+            },
+            {
+              "lower": 0.5,
+              "n": 414,
+              "predicted": 0.5434632243577954,
+              "observed": 0.5587236230010485
+            },
+            {
+              "lower": 0.6,
+              "n": 176,
+              "predicted": 0.6410248193838748,
+              "observed": 0.6868351692806135
+            },
+            {
+              "lower": 0.7,
+              "n": 86,
+              "predicted": 0.7444565356394401,
+              "observed": 0.8163701545880726
+            },
+            {
+              "lower": 0.8,
+              "n": 34,
+              "predicted": 0.8380756054299017,
+              "observed": 0.9410181606810181
+            },
+            {
+              "lower": 0.9,
+              "n": 1,
+              "predicted": 0.9013118939777196,
+              "observed": 1.0
+            }
+          ],
+          "fit_predict_seconds": 10.743914834107272,
+          "denominator_sensitivity": {
+            "5": {
+              "n": 13087,
+              "mae": 0.09318310376054147,
+              "rmse": 0.12375727916351088,
+              "flight_weighted_mae": 0.09127144454158599,
+              "bias": 0.005992533874806799,
+              "severe_events": 1345,
+              "severe_predicted": 697,
+              "severe_recall": 0.38513011152416354,
+              "severe_precision": 0.7431850789096126,
+              "calibration_mae": 0.01210419394519621,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 2774,
+                  "predicted": 0.06020721006508043,
+                  "observed": 0.06731698559195128
+                },
+                {
+                  "lower": 0.1,
+                  "n": 3449,
+                  "predicted": 0.1482821012605644,
+                  "observed": 0.14294799221165364
+                },
+                {
+                  "lower": 0.2,
+                  "n": 2984,
+                  "predicted": 0.2479218190553871,
+                  "observed": 0.231729241605073
+                },
+                {
+                  "lower": 0.3,
+                  "n": 2100,
+                  "predicted": 0.3452462210825557,
+                  "observed": 0.3294680193525353
+                },
+                {
+                  "lower": 0.4,
+                  "n": 1083,
+                  "predicted": 0.4438462932286572,
+                  "observed": 0.4267034292990946
+                },
+                {
+                  "lower": 0.5,
+                  "n": 403,
+                  "predicted": 0.5434471708420007,
+                  "observed": 0.5499873778058745
+                },
+                {
+                  "lower": 0.6,
+                  "n": 175,
+                  "predicted": 0.6410461120602624,
+                  "observed": 0.6869504178669789
+                },
+                {
+                  "lower": 0.7,
+                  "n": 84,
+                  "predicted": 0.7445205735241783,
+                  "observed": 0.8159662693798522
+                },
+                {
+                  "lower": 0.8,
+                  "n": 34,
+                  "predicted": 0.8380756054299017,
+                  "observed": 0.9410181606810181
+                },
+                {
+                  "lower": 0.9,
+                  "n": 1,
+                  "predicted": 0.9013118939777196,
+                  "observed": 1.0
+                }
+              ]
+            },
+            "10": {
+              "n": 12282,
+              "mae": 0.09149398604873021,
+              "rmse": 0.12139757503957836,
+              "flight_weighted_mae": 0.09073145333951359,
+              "bias": 0.005906732798400034,
+              "severe_events": 1238,
+              "severe_predicted": 664,
+              "severe_recall": 0.3966074313408724,
+              "severe_precision": 0.7394578313253012,
+              "calibration_mae": 0.011869750565919207,
+              "calibration_bins": [
+                {
+                  "lower": 0.0,
+                  "n": 2570,
+                  "predicted": 0.06168928629340178,
+                  "observed": 0.06879964817503915
+                },
+                {
+                  "lower": 0.1,
+                  "n": 3275,
+                  "predicted": 0.14744776464393444,
+                  "observed": 0.14309143527780727
+                },
+                {
+                  "lower": 0.2,
+                  "n": 2758,
+                  "predicted": 0.24798932821122704,
+                  "observed": 0.23331444794261363
+                },
+                {
+                  "lower": 0.3,
+                  "n": 1982,
+                  "predicted": 0.34565185093246037,
+                  "observed": 0.32897080838931664
+                },
+                {
+                  "lower": 0.4,
+                  "n": 1033,
+                  "predicted": 0.44391368383402974,
+                  "observed": 0.42323289045080487
+                },
+                {
+                  "lower": 0.5,
+                  "n": 384,
+                  "predicted": 0.5431912591425673,
+                  "observed": 0.5459978313125556
+                },
+                {
+                  "lower": 0.6,
+                  "n": 166,
+                  "predicted": 0.6414956412266709,
+                  "observed": 0.6891497759594035
+                },
+                {
+                  "lower": 0.7,
+                  "n": 79,
+                  "predicted": 0.7449318516900818,
+                  "observed": 0.817820674614864
+                },
+                {
+                  "lower": 0.8,
+                  "n": 34,
+                  "predicted": 0.8380756054299017,
+                  "observed": 0.9410181606810181
+                },
+                {
+                  "lower": 0.9,
+                  "n": 1,
+                  "predicted": 0.9013118939777196,
+                  "observed": 1.0
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "availability_audit": {
+    "rows_audited": 53704,
+    "future_feature_violations": 0,
+    "allowed_features": [
+      "sched_n_2h",
+      "hour",
+      "dow",
+      "month",
+      "lag_rate_2h",
+      "lag_rate_6h",
+      "observed_n_2h",
+      "backlog_n",
+      "temp_c",
+      "wind_ms",
+      "visibility_m",
+      "weather_age_min",
+      "airport_one_hot",
+      "upstream_rate (graph only)"
+    ],
+    "excluded": [
+      "tail",
+      "actual future assignments",
+      "delay causes",
+      "future actual weather",
+      "target_n",
+      "label_available_at"
+    ],
+    "availability_assumptions": [
+      "Final reported schedule treated as known; BTS has no historical schedule snapshots.",
+      "Actual departure events assumed available 15 minutes after departure; not verified operational feed latency.",
+      "ISD observations assumed available 60 minutes after observation; archival corrections may differ from real-time feed.",
+      "Cancellation publication times unavailable: cancellations enter labels only; backlog is unresolved scheduled departures, not known cancellations."
+    ]
+  },
+  "graph_contribution": {
+    "comparison": "temporal_residual MAE minus graph_residual MAE, same tabular base and OOF residual rows",
+    "heldout_mae_reduction": 0.0017648200866189762,
+    "uncertainty": {
+      "method": "circular seven-day moving-block bootstrap, 1000 draws, seed17",
+      "days": 92,
+      "mae_reduction_95pct_interval": [
+        0.0010604900153556012,
+        0.002394478867720655
+      ],
+      "caution": "Descriptive resampling interval for this carrier/year; not a guarantee under regime changes."
+    },
+    "interpretation": "Positive is an improvement; an observed negative result is retained. No claim of general superiority or significance."
+  },
+  "runtime_seconds": 83.02746016695164,
+  "limitations": [
+    "One carrier and eight focal airports in 2023; excludes passenger, crew, maintenance and non-WN propagation.",
+    "Overlapping 2h labels are serially dependent; point metrics are descriptive, without independence-based confidence claims.",
+    "Final schedules, revised archival observations and assumed feed latencies limit deployment interpretation.",
+    "Graph is a train-period scheduled-route adjacency and a linear temporal message residual, not observed future rotations or a large GNN.",
+    "No severe-event probability is estimated: calibration is mean predicted versus mean observed disruption rate; severe recall uses a 0.5 rate threshold."
+  ]
+}

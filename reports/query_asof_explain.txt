@@ -1,0 +1,79 @@
+┌───────────────────────────┐
+│         PROJECTION        │
+│    ────────────────────   │
+│__internal_decompress_strin│
+│           g(#0)           │
+│             #1            │
+│             #2            │
+│             #3            │
+│             #4            │
+│             #5            │
+│                           │
+│          ~0 rows          │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│          ORDER_BY         │
+│    ────────────────────   │
+│       c.airport ASC       │
+│        c.cutoff ASC       │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│         PROJECTION        │
+│    ────────────────────   │
+│__internal_compress_string_│
+│        uinteger(#0)       │
+│             #1            │
+│             #2            │
+│             #3            │
+│             #4            │
+│             #5            │
+│                           │
+│        ~93,000 rows       │
+└─────────────┬─────────────┘
+┌─────────────┴─────────────┐
+│         ASOF_JOIN         │
+│    ────────────────────   │
+│      Join Type: LEFT      │
+│                           │
+│        Conditions:        ├──────────────┐
+│     airport = airport     │              │
+│   cutoff >= available_at  │              │
+│                           │              │
+│        ~93,000 rows       │              │
+└─────────────┬─────────────┘              │
+┌─────────────┴─────────────┐┌─────────────┴─────────────┐
+│         PROJECTION        ││         SEQ_SCAN          │
+│    ────────────────────   ││    ────────────────────   │
+│          airport          ││     Table: stg_weather    │
+│           cutoff          ││   Type: Sequential Scan   │
+│                           ││                           │
+│                           ││        Projections:       │
+│                           ││          airport          │
+│                           ││        available_at       │
+│                           ││        observed_at        │
+│                           ││           temp_c          │
+│                           ││          wind_ms          │
+│                           ││        visibility_m       │
+│                           ││                           │
+│        ~14,014 rows       ││        ~93,000 rows       │
+└─────────────┬─────────────┘└───────────────────────────┘
+┌─────────────┴─────────────┐
+│         SEQ_SCAN          │
+│    ────────────────────   │
+│           Table:          │
+│     int_airport_hours     │
+│                           │
+│   Type: Sequential Scan   │
+│                           │
+│        Projections:       │
+│           cutoff          │
+│          airport          │
+│                           │
+│          Filters:         │
+│ cutoff>='2023-01-01 00:00 │
+│ :00'::TIMESTAMP AND cutoff│
+│  <'2023-02-01 00:00:00':  │
+│         :TIMESTAMP        │
+│                           │
+│        ~14,014 rows       │
+└───────────────────────────┘

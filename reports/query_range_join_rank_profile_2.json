@@ -1,0 +1,303 @@
+{
+    "total_bytes_written": 0,
+    "total_bytes_read": 0,
+    "rows_returned": 5952,
+    "latency": 2.572139958,
+    "result_set_size": 333312,
+    "cumulative_rows_scanned": 163072,
+    "cpu_time": 1.4117156259999994,
+    "extra_info": {},
+    "system_peak_buffer_memory": 257130496,
+    "blocked_thread_time": 0.0,
+    "cumulative_cardinality": 9181027,
+    "system_peak_temp_dir_size": 0,
+    "query_name": "select c.airport,c.cutoff,w.observed_at,w.temp_c,w.wind_ms,w.visibility_m\nfrom (select * from int_airport_hours where cutoff>=timestamp '2023-01-01'\nand cutoff<timestamp '2023-02-01') c\nleft join stg_weather w on c.airport=w.airport and w.available_at<=c.cutoff\nqualify row_number() over(partition by c.airport,c.cutoff order by w.available_at desc nulls last)=1\norder by c.airport,c.cutoff",
+    "children": [
+        {
+            "total_bytes_written": 0,
+            "result_set_size": 333312,
+            "operator_timing": 0.000017125,
+            "operator_rows_scanned": 0,
+            "cumulative_rows_scanned": 163072,
+            "operator_cardinality": 5952,
+            "operator_type": "PROJECTION",
+            "total_bytes_read": 0,
+            "operator_name": "PROJECTION",
+            "cpu_time": 1.4117156259999994,
+            "extra_info": {
+                "Projections": [
+                    "__internal_decompress_string(#0)",
+                    "#1",
+                    "#2",
+                    "#3",
+                    "#4",
+                    "#5"
+                ],
+                "Estimated Cardinality": "18600"
+            },
+            "cumulative_cardinality": 9181027,
+            "children": [
+                {
+                    "cumulative_cardinality": 9175075,
+                    "extra_info": {
+                        "Order By": [
+                            "c.airport ASC",
+                            "c.cutoff ASC"
+                        ]
+                    },
+                    "operator_name": "ORDER_BY",
+                    "cpu_time": 1.4116985009999994,
+                    "cumulative_rows_scanned": 163072,
+                    "operator_rows_scanned": 0,
+                    "operator_timing": 0.000718249,
+                    "result_set_size": 261888,
+                    "total_bytes_read": 0,
+                    "operator_type": "ORDER_BY",
+                    "total_bytes_written": 0,
+                    "operator_cardinality": 5952,
+                    "children": [
+                        {
+                            "total_bytes_written": 0,
+                            "result_set_size": 261888,
+                            "operator_timing": 0.000024709,
+                            "operator_rows_scanned": 0,
+                            "cumulative_rows_scanned": 163072,
+                            "operator_cardinality": 5952,
+                            "operator_type": "PROJECTION",
+                            "total_bytes_read": 0,
+                            "operator_name": "PROJECTION",
+                            "cpu_time": 1.4109802519999994,
+                            "extra_info": {
+                                "Projections": [
+                                    "__internal_compress_string_uinteger(#0)",
+                                    "#1",
+                                    "#2",
+                                    "#3",
+                                    "#4",
+                                    "#5"
+                                ],
+                                "Estimated Cardinality": "18600"
+                            },
+                            "cumulative_cardinality": 9169123,
+                            "children": [
+                                {
+                                    "cumulative_cardinality": 9163171,
+                                    "extra_info": {
+                                        "Projections": [
+                                            "airport",
+                                            "cutoff",
+                                            "observed_at",
+                                            "temp_c",
+                                            "wind_ms",
+                                            "visibility_m"
+                                        ],
+                                        "Estimated Cardinality": "18600"
+                                    },
+                                    "operator_name": "PROJECTION",
+                                    "cpu_time": 1.4109555429999994,
+                                    "cumulative_rows_scanned": 163072,
+                                    "operator_rows_scanned": 0,
+                                    "operator_timing": 0.000002375,
+                                    "result_set_size": 333312,
+                                    "total_bytes_read": 0,
+                                    "operator_type": "PROJECTION",
+                                    "total_bytes_written": 0,
+                                    "operator_cardinality": 5952,
+                                    "children": [
+                                        {
+                                            "total_bytes_written": 0,
+                                            "result_set_size": 333312,
+                                            "operator_timing": 0.0000032500000000000002,
+                                            "operator_rows_scanned": 0,
+                                            "cumulative_rows_scanned": 163072,
+                                            "operator_cardinality": 5952,
+                                            "operator_type": "PROJECTION",
+                                            "total_bytes_read": 0,
+                                            "operator_name": "PROJECTION",
+                                            "cpu_time": 1.4109531679999994,
+                                            "extra_info": {
+                                                "Projections": [
+                                                    "#1",
+                                                    "#2",
+                                                    "#3",
+                                                    "#4",
+                                                    "#5",
+                                                    "#6"
+                                                ],
+                                                "Estimated Cardinality": "18600"
+                                            },
+                                            "cumulative_cardinality": 9157219,
+                                            "children": [
+                                                {
+                                                    "cumulative_cardinality": 9151267,
+                                                    "extra_info": {
+                                                        "Expression": "(#7 = 1)",
+                                                        "Estimated Cardinality": "18600"
+                                                    },
+                                                    "operator_name": "FILTER",
+                                                    "cpu_time": 1.4109499179999994,
+                                                    "cumulative_rows_scanned": 163072,
+                                                    "operator_rows_scanned": 0,
+                                                    "operator_timing": 0.03703468000000006,
+                                                    "result_set_size": 428544,
+                                                    "total_bytes_read": 0,
+                                                    "operator_type": "FILTER",
+                                                    "total_bytes_written": 0,
+                                                    "operator_cardinality": 5952,
+                                                    "children": [
+                                                        {
+                                                            "total_bytes_written": 0,
+                                                            "result_set_size": 219004488,
+                                                            "operator_timing": 0.0009909140000000092,
+                                                            "operator_rows_scanned": 0,
+                                                            "cumulative_rows_scanned": 163072,
+                                                            "operator_cardinality": 3041729,
+                                                            "operator_type": "PROJECTION",
+                                                            "total_bytes_read": 0,
+                                                            "operator_name": "PROJECTION",
+                                                            "cpu_time": 1.3739152379999993,
+                                                            "extra_info": {
+                                                                "Projections": [
+                                                                    "#0",
+                                                                    "#1",
+                                                                    "#2",
+                                                                    "#3",
+                                                                    "#4",
+                                                                    "#5",
+                                                                    "#6",
+                                                                    "#7"
+                                                                ],
+                                                                "Estimated Cardinality": "93000"
+                                                            },
+                                                            "cumulative_cardinality": 9145315,
+                                                            "children": [
+                                                                {
+                                                                    "cumulative_cardinality": 6103586,
+                                                                    "extra_info": {
+                                                                        "Projections": "ROW_NUMBER() OVER (PARTITION BY airport, cutoff ORDER BY available_at DESC NULLS LAST)"
+                                                                    },
+                                                                    "operator_name": "WINDOW",
+                                                                    "cpu_time": 1.3729243239999993,
+                                                                    "cumulative_rows_scanned": 163072,
+                                                                    "operator_rows_scanned": 0,
+                                                                    "operator_timing": 1.2438620279999995,
+                                                                    "result_set_size": 219004488,
+                                                                    "total_bytes_read": 0,
+                                                                    "operator_type": "WINDOW",
+                                                                    "total_bytes_written": 0,
+                                                                    "operator_cardinality": 3041729,
+                                                                    "children": [
+                                                                        {
+                                                                            "total_bytes_written": 0,
+                                                                            "result_set_size": 194670656,
+                                                                            "operator_timing": 0.09887225299999991,
+                                                                            "operator_rows_scanned": 0,
+                                                                            "cumulative_rows_scanned": 163072,
+                                                                            "operator_cardinality": 3041729,
+                                                                            "operator_type": "HASH_JOIN",
+                                                                            "total_bytes_read": 0,
+                                                                            "operator_name": "HASH_JOIN",
+                                                                            "cpu_time": 0.1290622959999999,
+                                                                            "extra_info": {
+                                                                                "Join Type": "RIGHT",
+                                                                                "Conditions": [
+                                                                                    "airport = airport",
+                                                                                    "available_at <= cutoff"
+                                                                                ],
+                                                                                "Estimated Cardinality": "93000"
+                                                                            },
+                                                                            "cumulative_cardinality": 3061857,
+                                                                            "children": [
+                                                                                {
+                                                                                    "cumulative_cardinality": 8224,
+                                                                                    "extra_info": {
+                                                                                        "Table": "stg_weather",
+                                                                                        "Type": "Sequential Scan",
+                                                                                        "Projections": [
+                                                                                            "airport",
+                                                                                            "available_at",
+                                                                                            "observed_at",
+                                                                                            "temp_c",
+                                                                                            "wind_ms",
+                                                                                            "visibility_m"
+                                                                                        ],
+                                                                                        "Estimated Cardinality": "93000"
+                                                                                    },
+                                                                                    "operator_name": "SEQ_SCAN ",
+                                                                                    "cpu_time": 0.026184666999999995,
+                                                                                    "cumulative_rows_scanned": 93000,
+                                                                                    "operator_rows_scanned": 93000,
+                                                                                    "operator_timing": 0.026184666999999995,
+                                                                                    "result_set_size": 460544,
+                                                                                    "total_bytes_read": 0,
+                                                                                    "operator_type": "TABLE_SCAN",
+                                                                                    "total_bytes_written": 0,
+                                                                                    "operator_cardinality": 8224,
+                                                                                    "children": []
+                                                                                },
+                                                                                {
+                                                                                    "cumulative_cardinality": 11904,
+                                                                                    "extra_info": {
+                                                                                        "Projections": [
+                                                                                            "airport",
+                                                                                            "cutoff"
+                                                                                        ],
+                                                                                        "Estimated Cardinality": "14014"
+                                                                                    },
+                                                                                    "operator_name": "PROJECTION",
+                                                                                    "cpu_time": 0.004005376,
+                                                                                    "cumulative_rows_scanned": 70072,
+                                                                                    "operator_rows_scanned": 0,
+                                                                                    "operator_timing": 0.0000014990000000000004,
+                                                                                    "result_set_size": 142848,
+                                                                                    "total_bytes_read": 0,
+                                                                                    "operator_type": "PROJECTION",
+                                                                                    "total_bytes_written": 0,
+                                                                                    "operator_cardinality": 5952,
+                                                                                    "children": [
+                                                                                        {
+                                                                                            "total_bytes_written": 0,
+                                                                                            "result_set_size": 142848,
+                                                                                            "operator_timing": 0.0040038769999999994,
+                                                                                            "operator_rows_scanned": 70072,
+                                                                                            "cumulative_rows_scanned": 70072,
+                                                                                            "operator_cardinality": 5952,
+                                                                                            "operator_type": "TABLE_SCAN",
+                                                                                            "total_bytes_read": 0,
+                                                                                            "operator_name": "SEQ_SCAN ",
+                                                                                            "cpu_time": 0.0040038769999999994,
+                                                                                            "extra_info": {
+                                                                                                "Table": "int_airport_hours",
+                                                                                                "Type": "Sequential Scan",
+                                                                                                "Projections": [
+                                                                                                    "cutoff",
+                                                                                                    "airport"
+                                                                                                ],
+                                                                                                "Filters": "cutoff>='2023-01-01 00:00:00'::TIMESTAMP AND cutoff<'2023-02-01 00:00:00'::TIMESTAMP",
+                                                                                                "Estimated Cardinality": "14014"
+                                                                                            },
+                                                                                            "cumulative_cardinality": 5952,
+                                                                                            "children": []
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,48 @@
+{
+  "comparison": "January 2023: eight airports \u00d7 hourly cutoffs; latest available NOAA observation",
+  "duckdb_version": "1.4.5",
+  "threads": 2,
+  "memory_limit": "1GB",
+  "repetitions": 3,
+  "fresh_connection_each_run": true,
+  "identical_results": true,
+  "queries": {
+    "range_join_rank": {
+      "rows": 5952,
+      "seconds": [
+        12.838591000065207,
+        8.718400374986231,
+        2.5745101250940934
+      ],
+      "median_seconds": 8.718400374986231,
+      "peak_buffer_memory_bytes": [
+        257130496,
+        257130496,
+        257130496
+      ],
+      "max_peak_buffer_memory_bytes": 257130496,
+      "result_sha256": "b4f8008ca2d074edfc7cc893f4bb08a6a1e57627ecaa63c802ad657fa547d188",
+      "query": "select c.airport,c.cutoff,w.observed_at,w.temp_c,w.wind_ms,w.visibility_m\nfrom (select * from int_airport_hours where cutoff>=timestamp '2023-01-01'\nand cutoff<timestamp '2023-02-01') c\nleft join stg_weather w on c.airport=w.airport and w.available_at<=c.cutoff\nqualify row_number() over(partition by c.airport,c.cutoff order by w.available_at desc nulls last)=1\norder by c.airport,c.cutoff"
+    },
+    "asof": {
+      "rows": 5952,
+      "seconds": [
+        0.06467729096766561,
+        0.08639199996832758,
+        0.03646816697437316
+      ],
+      "median_seconds": 0.06467729096766561,
+      "peak_buffer_memory_bytes": [
+        31596544,
+        33845248,
+        29188096
+      ],
+      "max_peak_buffer_memory_bytes": 33845248,
+      "result_sha256": "b4f8008ca2d074edfc7cc893f4bb08a6a1e57627ecaa63c802ad657fa547d188",
+      "query": "select c.airport,c.cutoff,w.observed_at,w.temp_c,w.wind_ms,w.visibility_m\nfrom (select * from int_airport_hours where cutoff>=timestamp '2023-01-01'\nand cutoff<timestamp '2023-02-01') c\nasof left join stg_weather w on c.airport=w.airport and c.cutoff>=w.available_at\norder by c.airport,c.cutoff"
+    }
+  },
+  "speedup": 134.79847786675012,
+  "buffer_memory_reduction": 0.8683732636676437,
+  "limitations": "Measured local execution, including result materialization; OS file cache not cleared. Buffer memory is DuckDB profiler peak, not total Python/process RSS. January subset; not a full-warehouse benchmark."
+}
