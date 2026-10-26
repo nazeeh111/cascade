@@ -1,6 +1,6 @@
 # CASCADE replay data contract
 
-Buildless app, served with `python -m http.server --directory web/dist`. It fetches `data/replay.json`; static source is index.html, styles.css, app.js. No external fonts, tiles, scripts, or paid services. Parent owns data export and publishing.
+Buildless app, served with `python -m http.server --directory web/dist`. It fetches `data/replay.json`; static source is index.html, styles.css, app.js. No external fonts, tiles, scripts, or paid services. The Python exporter owns data generation; the checked static packaging script owns publication assets.
 
 ```json
 {
@@ -35,10 +35,10 @@ Buildless app, served with `python -m http.server --directory web/dist`. It fetc
 }
 ```
 
-Numbers in the schema above illustrate types only, never production data. All production numerical content comes from parent export.
+Numbers in the schema above illustrate types only, never production data. All production numerical content comes from the warehouse-backed exporter.
 
 Required: `airports` and nonempty `days[].frames`. Forecast and outcome rates are fractions 0..1. Missing values must be `null`, not zero. `cutoff` timestamps must be UTC ISO. `scheduled` is the target denominator for each airport's next 2h. Weighted network rates exclude rows missing that specific rate. `backlog` is known schedule-minus-observed-departure proxy. Edge flight counts must be defined by generating SQL; edge endpoints must be focal airports. Edges may instead be supplied once per day or globally. Day scenarios may instead be global `scenarios` rows with date.
 
-Default cutoff is 18:00 UTC when present; otherwise middle frame. Query parameters day, cutoff, airport, view restore a view. Map and airport rows are keyboard selectable; native controls support keyboard day/time/budget/policy changes. Forecast and final outcome modes remain visually and textually distinct. Playback pauses when tab is hidden. No unavailable observation is synthesized.
+Default cutoff is 16:00 UTC when present; otherwise middle frame. Query parameters day, cutoff, airport, view restore a view. Map and airport rows are keyboard selectable; native controls support keyboard day/time/budget/policy changes. Forecast and final outcome modes remain visually and textually distinct. Playback pauses when tab is hidden. No unavailable observation is synthesized.
 
 Design: paper and slate operational atlas, green / amber / coral stress bins, quiet geographic grid, compact monospace timing. All source links have safe URL handling and inserted data is escaped. Public source URL is configurable in metadata.

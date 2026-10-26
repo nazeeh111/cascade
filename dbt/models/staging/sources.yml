@@ -7,3 +7,5 @@ sources:
         description: Immutable WN BTS source rows, scoped at ingestion.
       - name: raw_weather
         description: Immutable NOAA source observations from eight airport stations.
+      - name: raw_carrier_cohorts
+        description: Small January2023all-reporting-carrier aggregate at eight focal origin airports, reconciled with the original January source.

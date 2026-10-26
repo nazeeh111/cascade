@@ -74,7 +74,8 @@ def test_weather_quality_priority_and_asof_no_fanout():
     c.executemany('insert into raw_weather values (?,?,?,?,?,?,?)',[
         ('72565003017','2023-01-01T00:00:00','4','FM-12','+0100,1','090,1,N,0040,1','016000,1,N,1'),
         ('72565003017','2023-01-01T00:00:00','4','FM-15','+0120,1','090,1,N,0050,1','016000,1,N,1'),
-        ('72565003017','2023-01-01T02:00:00','4','FM-15','+9999,9','999,9,9,9999,9','999999,9,9,9')])
+        ('72565003017','2023-01-01T02:00:00','4','FM-15','+9999,9','999,9,9,9999,9','999999,9,9,9'),
+        ('72565003017','2023-01-01T00:59:00','4','SOD  ','+9999,9','999,9,9,9999,9','999999,9,9,9')])
     sql=(ROOT/'dbt/models/staging/stg_weather.sql').read_text().replace("{{ source('public_snapshot','raw_weather') }}",'raw_weather').replace("{{ ref('airports') }}",'airports')
     c.execute('create table stg_weather as '+sql)
     assert c.execute('select temp_c,wind_ms from stg_weather order by observed_at').fetchall()==[(12.,5.),(None,None)]
@@ -85,9 +86,32 @@ def test_weather_quality_priority_and_asof_no_fanout():
 def test_backlog_counts_exact_publication_boundary():
     c=duckdb.connect();c.execute("set timezone='UTC'")
     c.execute("create table airports as select 'DEN' as airport,'America/Denver' as timezone,true as focal")
-    c.execute("create table flights as select 'DEN' as origin,timestamp '2023-01-01 12:45' as sched_dep, null::timestamp as actual_dep,null::double as dep_delay,false as cancelled")
+    c.execute("create table flights as select 'DEN' as origin,timestamp '2023-01-01 12:45' as sched_dep, null::timestamp as actual_dep,null::timestamp as observed_gate_out,false as actual_dep_clock_inconsistent,null::double as dep_delay,false as cancelled")
     c.execute("create table int_airport_hours as select 'DEN' as airport,unnest([timestamp '2023-01-01 13:00',timestamp '2023-01-01 14:00']) as cutoff")
     c.execute("create table int_hourly_events(airport varchar,event_hour timestamp,observed_n integer,observed_late_n integer,max_available_at timestamp)")
     sql=(ROOT/'dbt/models/intermediate/int_cutoff_features.sql').read_text()
     for table in ['airports','flights','int_airport_hours','int_hourly_events']:sql=sql.replace("{{ ref('"+table+"') }}",table)
     assert c.execute('select cutoff,backlog_n from ('+sql+') order by cutoff').fetchall()==[(datetime(2023,1,1,13),1),(datetime(2023,1,1,14),1)]
+
+
+def test_cancelled_gate_out_remains_an_observable_event():
+    c=fixture_db();c.execute('alter table airports add focal boolean default true')
+    add(c,CRSDepTime='1200',DepTime='1205',DepDelay='5',Cancelled='1',ArrDelay=None,ActualElapsedTime=None)
+    materialize(c)
+    assert c.execute('select actual_dep,observed_gate_out from flights').fetchone()==(None,datetime(2023,1,1,19,5))
+    sql=(ROOT/'dbt/models/intermediate/int_hourly_events.sql').read_text().replace("{{ ref('flights') }}",'flights').replace("{{ ref('airports') }}",'airports')
+    assert c.execute('select event_hour,observed_n from ('+sql+')').fetchone()==(datetime(2023,1,1,20),1)
+    # A future cancellation flag cannot erase a gate event already visible at cutoff.
+    c.execute('update flights set cancelled=false')
+    assert c.execute('select event_hour,observed_n from ('+sql+')').fetchone()==(datetime(2023,1,1,20),1)
+
+
+def test_label_maturity_includes_a_very_late_gate_out_before_cancellation():
+    c=duckdb.connect();c.execute("set timezone='UTC'")
+    c.execute("create table airports as select 'DEN' as airport,'America/Denver' as timezone,true as focal")
+    c.execute("create table flights as select 'DEN' as origin,timestamp '2023-01-01 13:15' as sched_dep,null::timestamp as actual_dep,timestamp '2023-01-02 04:00' as observed_gate_out,false as actual_dep_clock_inconsistent,885.::double as dep_delay,true as cancelled")
+    c.execute("create table int_airport_hours as select 'DEN' as airport,timestamp '2023-01-01 13:00' as cutoff")
+    c.execute("create table int_hourly_events(airport varchar,event_hour timestamp,observed_n integer,observed_late_n integer,max_available_at timestamp)")
+    sql=(ROOT/'dbt/models/intermediate/int_cutoff_features.sql').read_text()
+    for table in ['airports','flights','int_airport_hours','int_hourly_events']:sql=sql.replace("{{ ref('"+table+"') }}",table)
+    assert c.execute('select label_available_at from ('+sql+')').fetchone()[0]==datetime(2023,1,2,4,15)

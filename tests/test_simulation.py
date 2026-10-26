@@ -78,3 +78,9 @@ def test_already_observed_departure_cannot_receive_service():
     cutoff,rows=flights()
     rows[0].update(actual_dep=cutoff-timedelta(minutes=20),dep_delay=-20)
     assert '0' not in handled_flights(rows,{'A':1},cutoff)
+
+
+def test_eventual_cancellation_does_not_erase_an_observed_gate_out():
+    cutoff,rows=flights()
+    rows[0].update(cancelled=True,actual_dep=None,observed_gate_out=cutoff-timedelta(minutes=20))
+    assert '0' not in handled_flights(rows,{'A':1},cutoff)

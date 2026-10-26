@@ -3,7 +3,7 @@ with scheduled as (
  select origin as airport,date_trunc('hour',sched_dep) as h,count(*) as n,
    count(*) filter(where dep_delay>=15 or cancelled) as late_n,
    count(*) filter(where dep_delay is null and not cancelled) as unknown_n,
-   max(actual_dep+interval '15 minutes') as last_label
+   max(observed_gate_out+interval '15 minutes') as last_label
  from {{ ref('flights') }} group by 1,2
 ), backlog as (
  select f.origin as airport,h.cutoff,count(*) as backlog_n
@@ -12,7 +12,7 @@ with scheduled as (
    case when sched_dep+interval '15 minutes'=date_trunc('hour',sched_dep+interval '15 minutes')
         then interval '0 hours' else interval '1 hour' end,
    date_trunc('hour',sched_dep+interval '6 hours'),interval '1 hour') h(cutoff)
- where actual_dep is null or actual_dep+interval '15 minutes'>h.cutoff
+ where observed_gate_out is null or actual_dep_clock_inconsistent or observed_gate_out+interval '15 minutes'>h.cutoff
  group by 1,2
 ), history as (
  select g.*,coalesce(e.observed_n,0) as obs_n,coalesce(e.observed_late_n,0) as obs_late,

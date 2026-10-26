@@ -23,3 +23,5 @@ jobs:
         run: uv run cascade verify
       - name: Check browser source syntax
         run: node --check web/dist/app.js
+      - name: Build supported static deployment package
+        run: python scripts/build_site.py

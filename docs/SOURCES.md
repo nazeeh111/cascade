@@ -54,7 +54,7 @@ Every listed object returned HTTP 200. The station identifiers and coverage come
 
 The [ISD format specification](https://www.ncei.noaa.gov/pub/data/noaa/isd-format-document.pdf) defines UTC observation time, per-element quality flags, and missing sentinels. In CSV, `WND` holds direction, direction quality, type, speed (tenths of m/s), speed quality; `TMP`/`DEW` are signed tenths of Celsius plus quality. `VIS` contains metres and quality. `AA1` includes accumulation hours and tenths of millimetres; only a documented one-hour amount can be called hourly precipitation. Standard numeric quality codes 0/1/4/5 pass gross/all checks; 2/3/6/7 indicate suspect/error. Missing sentinels remain null regardless of quality. Code 9 has field-specific meaning; do not globally treat every 9 as a valid measurement or as missing.
 
-A sampled DEN CSV has both synoptic (`FM-12`) and routine aviation (`FM-15`) reports. Select report types and deterministically resolve duplicate station/observation timestamps before as-of joins. Join the last available observation at or before cutoff, cap staleness, and retain observation age. Historical objects have January 2026 modification dates: observation timestamp is not a verified 2023 release timestamp. A chosen publication lag is an assumption and requires sensitivity analysis; revised archival observations are not real-time forecasts.
+A sampled DEN CSV has both synoptic (`FM-12`) and routine aviation (`FM-15`) reports. Daily/monthly summary types SOD/SOM are excluded from hourly weather observations; they contain no usable temperature/wind/visibility in this snapshot and must not mask preceding observations. Other timestamped reports remain subject to element QC. Duplicate observation times prefer FM-15, then FM-16, then FM-12, with deterministic completeness/hash ties. Join the last available observation at or before cutoff, cap staleness, and retain observation age. Historical objects have January 2026 modification dates: observation timestamp is not a verified 2023 release timestamp. A chosen publication lag is an assumption and requires sensitivity analysis; revised archival observations are not real-time forecasts.
 
 ## Reuse, attribution, and limits
 
@@ -65,3 +65,9 @@ Source records are historical and can be corrected. Re-downloads must produce a 
 ## Foundational study and method boundaries
 
 [Fleurquin, Ramasco and Eguiluz, *Systemic delay propagation in the US airport network*](https://arxiv.org/abs/1301.1136) motivates reconstructing network propagation. CASCADE's restricted carrier/airport sample and hypothetical recovery resources do not replicate that study's model or establish causal delay attribution. No passenger counts, crew connections, monetary savings or operational airline readiness are inferred from the public flight/weather extracts.
+
+## January carrier-selection benchmark
+
+`data/benchmarks/carrier_cohorts_2023_01.parquet` contains all reporting-carrier/airport cohorts at the eight focal origins in January2023. Its small aggregate is rebuilt directly from the original JanuaryZIP, whose SHA256must equal the frozen WN-ingestion archive hash. Counts sum exactly to the corresponding focal-origin source rows. Delay averages/99thpercentiles use signed non-null gate-out delay; cancellations and unknown noncancelled status are separate.
+
+This is a one-month contextual comparison for carrier selection bias. It cannot establish an annual carrier ranking or isolate airline performance from airport/route/schedule mix. Forecasting and retrospective aircraft reconstructions use the declared WNscope. The all-carrier benchmark has no role in forecast features or model selection.

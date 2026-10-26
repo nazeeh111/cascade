@@ -14,6 +14,8 @@ def run():
     check('quickstart_has_real_nonempty_partitions',len(sample['sources'])==16 and sample['total_bytes']>0)
     for s in sample['sources']:
         check('quickstart_hash:'+s['path'],sha(ROOT/s['path'])==s['sha256'])
+    cohort=json.loads((ROOT/'data/benchmarks/carrier_cohorts_manifest.json').read_text())
+    check('carrier_cohort_snapshot_hash',sha(ROOT/'data/benchmarks/carrier_cohorts_2023_01.parquet')==cohort['parquet_sha256'])
     model=json.loads((ROOT/'reports/model_evaluation.json').read_text());sim=json.loads((ROOT/'reports/scenarios.json').read_text());replay=json.loads((ROOT/'web/dist/data/replay.json').read_text());eda=json.loads((ROOT/'reports/eda.json').read_text());bench=json.loads((ROOT/'reports/query_benchmark.json').read_text())
     check('five_models_three_chronological_folds',len(model['folds'])==3 and all(len(f['models'])==5 for f in model['folds']))
     for fold in model['folds']:
@@ -38,12 +40,21 @@ def run():
     database_checked=False
     if db.exists():
         database_checked=True;c=duckdb.connect(str(db),read_only=True)
+        from .modeling import load_rows,json_default
+        fingerprint=hashlib.sha256()
+        for row in load_rows(c):fingerprint.update(json.dumps(row,sort_keys=True,default=json_default).encode())
+        feature_hash=fingerprint.hexdigest()
+        check('current_feature_rows_match_model_fingerprint',feature_hash==model['feature_rows_sha256'])
         check('full_year_not_quickstart',c.execute('select count(*) from flights').fetchone()[0]==1438465)
         manifest=json.loads((ROOT/'data/source_manifest.json').read_text())
+        check('carrier_cohort_source_counts',c.execute('select sum(scheduled_n) from carrier_cohorts').fetchone()[0]==cohort['focal_source_rows'])
+        check('carrier_cohort_snapshot_matches_january',cohort['archive_sha256']==next(s for s in manifest['sources'] if s.get('month')==1)['archive_sha256'])
         check('scoped_source_count_reconciliation',sum(s['scoped_rows'] for s in manifest['sources'] if 'month' in s)==c.execute('select count(*) from raw_flights').fetchone()[0])
         for source in manifest['sources']:
             path=ROOT/(f"data/processed/flights/year=2023/month={source['month']:02d}/flights.parquet" if 'month' in source else f"data/processed/weather/year=2023/station={source['station']}/weather.parquet")
             check('full_partition_hash:'+str(path.relative_to(ROOT)),sha(path)==source['parquet_sha256'])
+        check('no_daily_monthly_summary_weather',c.execute("select count(*) from stg_weather where report_type in ('SOD','SOM')").fetchone()[0]==0)
+        check('no_unmatured_sim_calibration_arrivals',c.execute("select count(*) from flights f where not f.cancelled and not f.diverted and f.dep_delay is not null and not f.arrival_inconsistent and not f.scheduled_arr_clock_inconsistent and not f.actual_dep_clock_inconsistent and f.actual_dep+interval '15 minutes'<timestamp '2023-10-01' and f.sched_dep<timestamp '2023-10-01'-interval '14 hours' and f.actual_arr+interval '15 minutes'>=timestamp '2023-10-01'").fetchone()[0]==0)
         check('no_future_weather_or_events',c.execute('select count(*) from features where weather_available_at>cutoff or max_event_available_at>cutoff').fetchone()[0]==0)
         check('no_inconsistent_rotation_endpoints',c.execute('select count(*) from rotations r join flights f on f.flight_id=r.from_flight_id or f.flight_id=r.to_flight_id where f.arrival_inconsistent or f.scheduled_arr_clock_inconsistent or f.actual_dep_clock_inconsistent').fetchone()[0]==0)
         check('prediction_keys_unique',c.execute('select count(*) from (select airport,cutoff,model,fold,count(*) as n from predictions group by all having n<>1)').fetchone()[0]==0)

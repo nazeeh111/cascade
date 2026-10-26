@@ -24,8 +24,12 @@ def main():
         ThreadingHTTPServer(('127.0.0.1',args.port),partial(SimpleHTTPRequestHandler,directory=str(ROOT/'web/dist'))).serve_forever();return
     if args.command=='quickstart':
         from .warehouse import run
-        for f in (ROOT/'data/quickstart').glob('**/*.parquet'):
-            item=next(s for s in json.loads((ROOT/'data/quickstart/manifest.json').read_text())['sources'] if s['path']==str(f.relative_to(ROOT)))
+        manifest=json.loads((ROOT/'data/quickstart/manifest.json').read_text())
+        expected={str(ROOT/item['path']) for item in manifest['sources']}
+        actual={str(f) for f in (ROOT/'data/quickstart').glob('**/*.parquet')}
+        if actual!=expected:raise ValueError('Quickstart partition set differs from its licensed manifest')
+        for item in manifest['sources']:
+            f=ROOT/item['path']
             if hashlib.sha256(f.read_bytes()).hexdigest()!=item['sha256']:raise ValueError(f'Changed bundled data: {f.name}')
         print(json.dumps(run(quickstart=True,db_path=args.db),indent=2));return
     steps=['ingest','warehouse','eda','model','simulate','benchmark','export','package-sample','verify'] if args.command=='full' else [args.command]

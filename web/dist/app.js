@@ -51,6 +51,7 @@ function initialize(data) {
   const meta = data.meta || {};
   link('repoLink', meta.repository_url || repo); link('footerRepo', meta.repository_url || repo);
   link('mapSql', meta.sql_url || `${repo}/blob/main/dbt/models/marts/features.sql`);
+  link('edgeSql',meta.edge_sql_url || `${repo}/blob/main/sql/app_edges.sql`); link('scenarioSql',meta.scenario_sql_url || `${repo}/blob/main/sql/scenario_inputs.sql`);
   link('airportSql', meta.sql_url || `${repo}/blob/main/dbt/models/marts/features.sql`);
   link('modelSource', meta.model_url || `${repo}/blob/main/docs/MODEL_CARD.md`);
   link('scenarioSource', meta.scenario_url || `${repo}/blob/main/reports/scenarios.json`);
@@ -86,7 +87,7 @@ function render() {
   const end = date ? new Date(date.getTime() + 7200000) : null;
   setText('horizonText', end ? `${clock(current.cutoff)} → ${clock(end.toISOString())} UTC` : 'Two hours after cutoff');
   setText('mapBadge', isForecast ? 'CUTOFF AWARE' : 'RETROSPECTIVE'); $('mapBadge').classList.toggle('outcome', !isForecast);
-  setText('mapNote', isForecast ? 'Node color: predicted late or cancelled share of scheduled departures in the next 2h. Select an airport.' : 'Node color: final late or cancelled share in the next 2h. These outcomes were unknown at the cutoff.');
+  setText('mapNote', isForecast ? 'Color: predicted disruption in the next 2h. Node size: scheduled departure volume. Select an airport.' : 'Color: final disruption in the next 2h. Node size: scheduled volume. Outcomes were unknown at cutoff.');
   setText('airportListMetric', isForecast ? 'FORECAST' : 'FINAL OUTCOME');
   setText('replayContext',`Question: where is next-2h departure disruption concentrated? Denominator: ${fmt(sumAvailable(items.map(scheduled)))} scheduled WN departures at the eight focal airports. Finding: ${pct(weightedRate(items,isForecast?'prediction':'target_rate'),1)} ${isForecast?'predicted':'observed final'} disruption. Limit: final schedules and feed latencies are assumed; selected carrier/network only. Decision: compare rate with demand, then inspect the bounded recovery experiment.`);
   renderMap(); renderTimeline(); renderAirport(); renderScenarios(); updateQuery();
@@ -220,7 +221,7 @@ function renderFindings() {
 function renderModels() {
   const models = state.data.models || {}, metrics = Array.isArray(models) ? models : models.metrics || [];
   setText('modelSummary', models.summary || 'Compare the tabular model with seasonal and rolling baselines, then test the contribution of network features on unseen dates. The exported evaluation determines which forecast powers this replay.');
-  $('modelTable').innerHTML = metrics.length ? metrics.map(metric => `<tr class="${metric.model === state.data.meta?.forecast_model ? 'preferred' : ''}"><td>${escapeHtml(metric.label || policyName(metric.model || 'Unnamed model'))}</td><td>${escapeHtml(metric.split || metric.fold || 'holdout')}</td><td>${escapeHtml(pp(metric.mae))}</td><td>${escapeHtml(pp(metric.rmse))}</td><td>${escapeHtml(pct(metric.severe_recall ?? metric.severe_event_recall, 1))}</td><td>${number(metric.runtime_seconds ?? metric.runtime_s) === null ? '—' : `${escapeHtml(fmt(metric.runtime_seconds ?? metric.runtime_s, 2))} s`}</td></tr>`).join('') : '<tr><td class="model-empty" colspan="6">No evaluation metrics supplied. Open the model card for evidence and limits.</td></tr>';
+  $('modelTable').innerHTML = metrics.length ? metrics.map(metric => `<tr class="${metric.model === state.data.meta?.forecast_model ? 'preferred' : ''}"><td>${escapeHtml(metric.label || policyName(metric.model || 'Unnamed model'))}</td><td>${escapeHtml(metric.split || metric.fold || 'holdout')}</td><td>${escapeHtml(pp(metric.mae))}</td><td>${escapeHtml(pp(metric.rmse))}</td><td>${escapeHtml(pp(metric.calibration_mae))}</td><td>${escapeHtml(pct(metric.severe_recall ?? metric.severe_event_recall, 1))}</td><td>${number(metric.runtime_seconds ?? metric.runtime_s) === null ? '—' : `${escapeHtml(fmt(metric.runtime_seconds ?? metric.runtime_s, 2))} s`}</td></tr>`).join('') : '<tr><td class="model-empty" colspan="7">No evaluation metrics supplied. Open the model card for evidence and limits.</td></tr>';
 }
 function renderProvenance() {
   const meta = state.data.meta || {}, details = [];

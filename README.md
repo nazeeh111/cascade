@@ -53,31 +53,46 @@ Source downloads are public and resumable by completed partition. Incomplete byt
 
 ## What the evidence says
 
-The tabular model was selected on August/September validation and remains the demo model even though the graph variant later performs better on the final holdout. October–December contains **13,492 labeled airport-hour cutoffs** and **92 days**. Calibration, severe-event recall, denominator sensitivities, timing and the paired network contribution are reported in [model_evaluation.json](reports/model_evaluation.json).
+The **tabular** model was selected by mean August/September validation MAE. Final October–December evaluation contains **13,492 labeled airport-hour cutoffs** over **92 days**. The following rates describe the selected WN network, with the declared archival availability assumptions.
 
-Three reproducible descriptive findings illustrate the investigation:
+| Model | MAE (pp) | RMSE (pp) | Rate-calibration error (pp) | Severe recall | Fit/predict (s) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| seasonal | 14.62 | 18.69 | 6.96 | 22.2% | 0.49 |
+| rolling | 12.22 | 16.65 | 5.41 | 39.5% | 0.15 |
+| tabular | 10.21 | 13.83 | 1.68 | 39.1% | 7.42 |
+| temporal residual | 10.08 | 13.82 | 0.99 | 36.3% | 20.57 |
+| graph residual | 9.91 | 13.63 | 1.30 | 36.3% | 20.42 |
 
-- DEN recorded 35.9% late15-or-cancelled departures, versus 22.1% at HOU in this carrier/year. Airport/route/schedule mix confounds the comparison.
-- A validated next departure was late15 in 80.4% of pairs after a late15 inbound, versus 14.0% after an inbound under 15 minutes late. Shared weather and selection on completed legs prevent causal attribution.
-- Departure-delay median was 1 minute, mean 11.7 minutes and 99th percentile 147 minutes. There were 592,247 early departures and 17,227 unobserved arrival delays. Missing arrival outcomes remain null.
+A severe case has an observed late15-or-cancelled rate of at least 50%; recall uses the same threshold on predictions. Rate calibration is not an event probability. Residual timings include their tabular and out-of-time fits, so overlapping timings must not be added.
 
-All figures are generated from [SQL analysis](sql/analysis) and frozen with the released source snapshot. The full findings, including weather association and selection/censoring limits, are in [reports/EDA.md](reports/EDA.md).
+The graph residual reduces held-out MAE by **0.175 pp** versus the temporal residual (seven-day block-bootstrap descriptive 95% interval: **0.101–0.242 pp**). This is a restricted-network result, not broad superiority. Model selection remains based on validation, including when final-test rankings differ. [Complete calibration, folds and denominator sensitivities](reports/model_evaluation.json).
+
+Reproducible SQL findings include:
+
+- DEN recorded 35.9% late15-or-cancelled departures (96,164 scheduled), versus 22.1% at HOU (50,884). [Question, denominator and limits](sql/analysis/airport_cohorts.sql).
+- Next departures were late15 in 80.4% of pairs after a late15 inbound, versus 14.0% after an inbound under15 minutes late. [Question, denominator and limits](sql/analysis/rotation_associations.sql).
+- Departure delay median was 1 min, mean 11.7 min, and 99th percentile 147 min. 592,247 departures were early; 17,227 arrival delays were unobserved. [Question, denominator and limits](sql/analysis/overview.sql).
+- Among 80,786 scheduled January departures at the eight focal origins, WN accounts for 43,468 departures (53.8%). The remaining reporting carriers have different airport, route and schedule mixes. [Question, denominator and limits](sql/analysis/carrier_cohorts.sql).
+
+[Full SQL investigation and chart notebook](reports/EDA.md), including weather, seasonality, selection bias and cancellation censoring.
 
 ## Scale and query performance
 
-The measured ingestion scanned **6,847,899 all-carrier source rows**, retaining the WN scope. Downloads totaled **395,751,334 bytes**; scoped flight/weather Parquet totaled **21,019,683 bytes**. Ingestion wall time on the development Mac was 531.6 seconds; the full dbt build took 242.1 seconds including process/setup overhead. These are observed local measurements, not throughput guarantees.
+The measured ingestion scanned **6,847,899 all reporting-carrier source rows**, retaining **1,438,465 WN flights**. Eight stations supplied **93,148 source reports**, deduplicated to **90,084 observations**. The warehouse creates **69,688 hourly feature rows** and **1,160,285 validated retrospective links**.
 
-A January eight-airport latest-weather query compares range-join-plus-ranking with ASOF. Both return the same SHA-256 result; three fresh-connection repetitions show about 135× median speedup and 87% lower DuckDB peak buffer memory. This is a measured subset improvement, not a full-pipeline or process-RSS claim. Inspect [before/after SQL](sql), [EXPLAIN plans and profile JSON](reports/query_benchmark.json) and [warehouse measurements](reports/warehouse_run.json).
+Original downloads totaled **395,751,334 bytes**; scoped flight/weather Parquet totaled **21,019,683 bytes**. Stage wall times on the development Mac were ingestion **531.6s** (initial download), full warehouse **225.4s**, model evaluation **52.8s**, and recovery evaluation **131.7s**. These are separately observed local stage measurements, with cache/host effects, not a throughput guarantee or a single uninterrupted end-to-end timing.
+
+A January eight-airport weather query compares range-join-plus-ranking with ASOF. Both return the same SHA-256 result. Three fresh-connection repetitions measured **134.8×** median speedup and **86.8%** lower DuckDB peak buffer memory. This is a subset improvement; buffer memory is not process RSS. Inspect [before/after SQL](sql), [EXPLAIN/profile evidence](reports/query_benchmark.json) and [warehouse measurements](reports/warehouse_run.json).
 
 ## Recovery validation
 
-The deterministic baseline was replayed on 178,864 completed flights across all 92 held-out days: MAE 11.30 minutes, RMSE 25.43 minutes and bias −4.90 minutes. Its delay15 recall was only **11.1%**. This underrepresentation of tail events materially limits operational interpretation.
+The deterministic positive-delay baseline (early departures scored as zero, signed values preserved in the warehouse) was replayed on **178,864 completed flights across 92 held-out days**: MAE **11.29 min**, RMSE **25.44 min**, and bias **-4.92min**. Its delay15 recall was only **11.2%**. This underrepresentation of tail events materially limits operational interpretation.
 
-At a four-team hypothetical budget, mean daily simulated reduction was 22.8 minutes for schedule-volume priority, 26.9 for backlog priority and 31.1 for the forecast-aware optimizer. These are internal simulator differences. They are not measured causal savings, and optimizer scores do not establish an optimal real airline plan. All nine turnaround/shock sensitivity combinations and day-level errors remain visible in [scenarios.json](reports/scenarios.json).
+At a four-team hypothetical budget, mean daily simulated reduction was **22.6 min** for schedule-volume priority, **26.8 min** for backlog priority and **31.5 min** for the forecast-aware optimizer. These are internal simulator differences, not measured causal savings or an optimal real airline plan. All nine turnaround/shock sensitivities and day-level errors remain visible in [scenarios.json](reports/scenarios.json).
 
 ## Boundaries that matter
 
-Final BTS schedules are assumed known before cutoff; historical schedule versions are unavailable. Departure events have an assumed 15-minute observation lag and NOAA observations an assumed 60-minute publication lag. Corrected archival records may differ from what a real-time feed showed. Cancellation announcement times are absent; labels mature retrospectively and cancellation status never enters the cutoff feature matrix.
+Final BTS schedules are assumed known before cutoff; historical schedule versions are unavailable. Recorded gate-out events have an assumed 15-minute observation lag and NOAA observations an assumed 60-minute publication lag. Corrected archival records may differ from what a real-time feed showed. Cancellation announcement times are absent; labels mature retrospectively and cancellation status never enters the cutoff feature matrix. Eventual cancellation also cannot erase a gate-out already observed at cutoff.
 
 Actual aircraft assignments are used only for retrospective chains and scenario topology. International/ferry/maintenance movements, passengers, crew legality, gates and airspace restrictions are missing. Same-tail association is not proof of propagation cause. The simulator enforces its stated bounds; those are a small hypothetical experiment, not all real airline constraints. Baseline replay error and negative/inconclusive model comparisons are retained.
 

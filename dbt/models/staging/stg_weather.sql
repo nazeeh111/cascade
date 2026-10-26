@@ -1,7 +1,7 @@
 -- Grain station + UTC observation timestamp. Keep deterministic report priority.
 with parsed as (
  select STATION as station, try_cast(DATE as timestamp) as observed_at,
-    SOURCE as observation_source, REPORT_TYPE as report_type,
+    SOURCE as observation_source, trim(REPORT_TYPE) as report_type,
     try_cast(split_part(TMP,',',1) as double)/10 as t,
     split_part(TMP,',',2) as tq,
     try_cast(split_part(WND,',',4) as double)/10 as w,
@@ -10,6 +10,7 @@ with parsed as (
     split_part(VIS,',',2) as vq,
     md5(to_json(struct_pack(STATION,DATE,SOURCE,REPORT_TYPE,TMP,WND,VIS))) as observation_hash
  from {{ source('public_snapshot','raw_weather') }}
+ where coalesce(trim(REPORT_TYPE),'') not in ('SOD','SOM')
 ), cleaned as (
  select *, case when tq in ('0','1','4','5') and t between -93 and 61 then t end as temp_c,
    case when wq in ('0','1','4','5') and w between 0 and 90 then w end as wind_ms,

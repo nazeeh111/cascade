@@ -70,11 +70,16 @@ def allocate(scores, capacity, budget=DEFAULT_BUDGET, optimize=False):
     return result
 
 
+def gate_out_observable(flight,cutoff):
+    event=flight.get("observed_gate_out",flight.get("actual_dep"))
+    return event is not None and event+timedelta(minutes=15)<=cutoff
+
+
 def handled_flights(flights, allocation, cutoff):
     """Serve the first scheduled legs; unknown cancellations consume a slot too."""
     eligible = defaultdict(list)
     for f in flights:
-        if cutoff <= f["sched_dep"] < cutoff + timedelta(hours=2) and not (f.get("actual_dep") is not None and f["actual_dep"] + timedelta(minutes=15) <= cutoff):
+        if cutoff <= f["sched_dep"] < cutoff + timedelta(hours=2) and not gate_out_observable(f,cutoff):
             eligible[f["origin"]].append(f)
     handled = set()
     for a, teams in allocation.items():
@@ -147,6 +152,7 @@ def calibrate(con, cutoff="2023-10-01"):
                extract(hour FROM timezone(f.origin_tz, timezone('UTC', f.sched_dep)))::INTEGER AS local_hour
         FROM flights f LEFT JOIN rotations r ON r.to_flight_id=f.flight_id
         WHERE NOT f.cancelled AND NOT f.diverted AND f.dep_delay IS NOT NULL
+          AND NOT f.arrival_inconsistent AND NOT f.scheduled_arr_clock_inconsistent AND NOT f.actual_dep_clock_inconsistent
           AND f.actual_dep + INTERVAL '15 minutes' < TIMESTAMP '2023-10-01'
           AND f.sched_dep < TIMESTAMP '2023-10-01' - INTERVAL '14 hours'
     """)
@@ -188,7 +194,7 @@ def run(db_path=Path("data/cascade.duckdb"), output_dir=Path("reports")):
     for d in dates:
         cutoff = datetime.combine(d, datetime.min.time()) + timedelta(hours=16)
         horizon_end = cutoff + timedelta(hours=8)
-        flights = dict_rows(con, """SELECT f.flight_id,f.origin,f.dest,f.sched_dep,f.sched_arr,f.actual_dep,f.actual_arr,f.dep_delay,f.arr_delay,f.cancelled,f.diverted,
+        flights = dict_rows(con, """SELECT f.flight_id,f.origin,f.dest,f.sched_dep,f.sched_arr,f.actual_dep,f.observed_gate_out,f.actual_arr,f.dep_delay,f.arr_delay,f.cancelled,f.diverted,
             extract(hour FROM timezone(f.origin_tz, timezone('UTC',f.sched_dep)))::INTEGER AS local_hour,
             r.from_flight_id,r.sched_gap_min,p.actual_arr AS prev_actual_arr,p.arr_delay AS prev_arr_delay,
             p.sched_dep as prev_sched_dep,p.actual_dep as prev_actual_dep,p.dep_delay as prev_dep_delay,
@@ -201,7 +207,7 @@ def run(db_path=Path("data/cascade.duckdb"), output_dir=Path("reports")):
         forecast = dict(con.execute("SELECT airport,prediction FROM predictions WHERE model=? AND cutoff=? AND split='test'", [selected_model,cutoff]).fetchall())
         # If midnight-UTC schedule is empty at a focal airport, train prior supplies a declared fallback.
         forecast = {a: float(forecast.get(a, rates.get(a, .2))) for a in focal}
-        counts = {a: sum(f["origin"] == a and cutoff <= f["sched_dep"] < cutoff + timedelta(hours=2) and not (f.get("actual_dep") is not None and f["actual_dep"]+timedelta(minutes=15)<=cutoff) for f in flights) for a in focal}
+        counts = {a: sum(f["origin"] == a and cutoff <= f["sched_dep"] < cutoff + timedelta(hours=2) and not gate_out_observable(f,cutoff) for f in flights) for a in focal}
         capacity = {a: min(MAX_TEAMS_PER_AIRPORT, math.ceil(counts[a] / FLIGHTS_PER_TEAM)) for a in focal}
         # Fixed forecast-driven shock scaling, clipped to prevent extrapolation explosions.
         scales = {a: min(3., max(.25, forecast[a] / max(.05, rates.get(a, .2)))) for a in focal}

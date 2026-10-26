@@ -1,0 +1,11 @@
+{
+  "source": "BTS January2023Reporting Carrier, all reporting airlines at8focal origins",
+  "url": "https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_2023_1.zip",
+  "archive_sha256": "327924faa362d360747e9e4cf37f461c877441916321754f1789fadd61fd403a",
+  "source_rows": 538837,
+  "focal_source_rows": 80786,
+  "parquet_sha256": "e8291fd36b257927b5191e069cb46a409481664a10fc1637f1e11bf57fd1e744",
+  "parquet_bytes": 3421,
+  "query": "select Reporting_Airline as carrier,Origin as airport,'2023-01' as period,\n      count(*) as scheduled_n,\n      count(*) filter(where try_cast(Cancelled as double)=1 or try_cast(DepDelay as double)>=15) as disrupted_n,\n      count(*) filter(where try_cast(Cancelled as double)=1) as cancelled_n,\n      count(*) filter(where try_cast(Cancelled as double)=0 and try_cast(DepDelay as double) is null) as unknown_n,\n      count(try_cast(DepDelay as double)) as observed_gate_delay_n,\n      avg(try_cast(DepDelay as double)) as mean_dep_delay,\n      quantile_cont(try_cast(DepDelay as double),.99) as p99_dep_delay\n      from source where Origin in ('BWI','DAL','DEN','HOU','LAS','MDW','OAK','PHX') group by 1,2,3 order by 1,2",
+  "limitation": "A January selection-bias benchmark, not a full-year or causal ranking. Reporting carriers have different airport, route and schedule mixes; small cohorts remain visible."
+}

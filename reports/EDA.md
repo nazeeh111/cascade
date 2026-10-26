@@ -1,6 +1,6 @@
 # CASCADE: SQL investigation
 
-WN domestic reporting-carrier flights, 2023; eight focal airports. Not all airlines, passengers, or international legs.
+WN domestic reporting-carrier flights, 2023; eight focal airports. A separate January all-reporting-carrier aggregate supplies carrier-selection context. No passenger or international-leg inference.
 
 No filling missing delays with zero; incomplete next-2h labels remain null. Cancellation is a distinct event, not zero delay.
 
@@ -36,7 +36,7 @@ Generating SQL: [sql/analysis/rotation_associations.sql](../sql/analysis/rotatio
 
 **Question:** How much information is lost by reducing delay to a mean or filling missing arrival delays with zero?
 
-**Denominator:** 1,438,465 validated WN scheduled flights; percentiles use non-null departure delay only.
+**Denominator:** 1,438,465 deduplicated WN scheduled flights with departure-time checks passed; percentiles use non-null departure delay only.
 
 **Finding:** Departure delay median was 1 min, mean 11.7 min, and 99th percentile 147 min. 592,247 departures were early; 17,227 arrival delays were unobserved.
 
@@ -60,9 +60,23 @@ Generating SQL: [sql/analysis/overview.sql](../sql/analysis/overview.sql)
 
 Generating SQL: [sql/analysis/weather_associations.sql](../sql/analysis/weather_associations.sql)
 
+## The carrier scope is a deliberate selection
+
+**Question:** How much of the January reporting-carrier traffic at the focal airports does the WN study cover?
+
+**Denominator:** 80,786 scheduled departures in the January2023BTS reporting-carrier extract at the eight focal origins, including cancellations.
+
+**Finding:** WN accounts for 43,468 of those departures (53.8%). The remaining reporting carriers have different airport, route and schedule mixes.
+
+**Limitation:** January only; selected reporting carriers and origins, not all US operations or passenger market share. The comparison cannot isolate an airline effect.
+
+**Decision:** Interpret the forecast as WN-network evidence and check carrier/airport composition before transferring findings to a different operation.
+
+Generating SQL: [sql/analysis/carrier_cohorts.sql](../sql/analysis/carrier_cohorts.sql)
+
 ## Selection, censoring and negative evidence
 
-All-carrier monthly source counts and WN scoped counts are reconciled in the source manifest. The eight-airport subset is compared with other WN origins in `monthly.sql`. Carrier effects cannot be separated in a one-carrier release. Local-hour/weekday/month cohorts are explicit in `local_seasonality.sql`.
+All-carrier monthly source counts and WN scoped counts are reconciled in the source manifest. The eight-airport subset is compared with other WN origins in `monthly.sql`. Forecasting uses one carrier; the separate January carrier/airport benchmark diagnoses selection bias without isolating carrier effects. Local-hour/weekday/month cohorts are explicit in `local_seasonality.sql`.
 
 Weather groups include missing/stale observations. Rotations exclude airport discontinuity, cancelled/diverted legs, overlaps, missing actual times and scheduled turns outside 20–360 minutes. These filters select completed operations, so chain associations do not describe the worst censored disruptions. The path examples are plausible chains, not proven delay transmission.
 
@@ -145,6 +159,315 @@ Query: [`airport_cohorts.sql`](../sql/analysis/airport_cohorts.sql). Full result
     "unknown_n": 0,
     "mean_dep_delay": 9.728875608501207,
     "missing_arr_n": 457
+  }
+]
+```
+
+### carrier_cohorts
+
+Query: [`carrier_cohorts.sql`](../sql/analysis/carrier_cohorts.sql). Full result: [`eda.json`](eda.json).
+
+```json
+[
+  {
+    "carrier": "WN",
+    "airport": "BWI",
+    "period": "2023-01",
+    "scheduled_n": 5494,
+    "disrupted_n": 1384,
+    "cancelled_n": 76,
+    "unknown_n": 0,
+    "disruption_rate": 0.2519111758281762,
+    "mean_dep_delay": 12.981177338992435,
+    "p99_dep_delay": 202.0
+  },
+  {
+    "carrier": "NK",
+    "airport": "BWI",
+    "period": "2023-01",
+    "scheduled_n": 505,
+    "disrupted_n": 142,
+    "cancelled_n": 10,
+    "unknown_n": 0,
+    "disruption_rate": 0.2811881188118812,
+    "mean_dep_delay": 19.141414141414142,
+    "p99_dep_delay": 199.04000000000008
+  },
+  {
+    "carrier": "DL",
+    "airport": "BWI",
+    "period": "2023-01",
+    "scheduled_n": 396,
+    "disrupted_n": 47,
+    "cancelled_n": 2,
+    "unknown_n": 0,
+    "disruption_rate": 0.11868686868686869,
+    "mean_dep_delay": 3.8477157360406093,
+    "p99_dep_delay": 107.76999999999992
+  },
+  {
+    "carrier": "UA",
+    "airport": "BWI",
+    "period": "2023-01",
+    "scheduled_n": 261,
+    "disrupted_n": 35,
+    "cancelled_n": 1,
+    "unknown_n": 0,
+    "disruption_rate": 0.13409961685823754,
+    "mean_dep_delay": 4.480769230769231,
+    "p99_dep_delay": 157.0400000000011
+  },
+  {
+    "carrier": "AA",
+    "airport": "BWI",
+    "period": "2023-01",
+    "scheduled_n": 229,
+    "disrupted_n": 42,
+    "cancelled_n": 7,
+    "unknown_n": 0,
+    "disruption_rate": 0.18340611353711792,
+    "mean_dep_delay": 9.054054054054054,
+    "p99_dep_delay": 203.84999999999988
+  },
+  {
+    "carrier": "F9",
+    "airport": "BWI",
+    "period": "2023-01",
+    "scheduled_n": 184,
+    "disrupted_n": 49,
+    "cancelled_n": 2,
+    "unknown_n": 0,
+    "disruption_rate": 0.266304347826087,
+    "mean_dep_delay": 16.032967032967033,
+    "p99_dep_delay": 208.51999999999998
+  },
+  {
+    "carrier": "YX",
+    "airport": "BWI",
+    "period": "2023-01",
+    "scheduled_n": 89,
+    "disrupted_n": 9,
+    "cancelled_n": 3,
+    "unknown_n": 0,
+    "disruption_rate": 0.10112359550561797,
+    "mean_dep_delay": 2.453488372093023,
+    "p99_dep_delay": 186.50000000000006
+  },
+  {
+    "carrier": "B6",
+    "airport": "BWI",
+    "period": "2023-01",
+    "scheduled_n": 86,
+    "disrupted_n": 18,
+    "cancelled_n": 2,
+    "unknown_n": 0,
+    "disruption_rate": 0.20930232558139536,
+    "mean_dep_delay": 2.447058823529412,
+    "p99_dep_delay": 98.15999999999983
+  },
+  {
+    "carrier": "9E",
+    "airport": "BWI",
+    "period": "2023-01",
+    "scheduled_n": 56,
+    "disrupted_n": 11,
+    "cancelled_n": 1,
+    "unknown_n": 0,
+    "disruption_rate": 0.19642857142857142,
+    "mean_dep_delay": 7.054545454545455,
+    "p99_dep_delay": 98.82000000000002
+  },
+  {
+    "carrier": "MQ",
+    "airport": "BWI",
+    "period": "2023-01",
+    "scheduled_n": 51,
+    "disrupted_n": 11,
+    "cancelled_n": 0,
+    "unknown_n": 0,
+    "disruption_rate": 0.21568627450980393,
+    "mean_dep_delay": 12.490196078431373,
+    "p99_dep_delay": 215.0
+  },
+  {
+    "carrier": "AS",
+    "airport": "BWI",
+    "period": "2023-01",
+    "scheduled_n": 31,
+    "disrupted_n": 8,
+    "cancelled_n": 0,
+    "unknown_n": 0,
+    "disruption_rate": 0.25806451612903225,
+    "mean_dep_delay": 16.225806451612904,
+    "p99_dep_delay": 230.0999999999999
+  },
+  {
+    "carrier": "G4",
+    "airport": "BWI",
+    "period": "2023-01",
+    "scheduled_n": 11,
+    "disrupted_n": 1,
+    "cancelled_n": 0,
+    "unknown_n": 0,
+    "disruption_rate": 0.09090909090909091,
+    "mean_dep_delay": 2.1818181818181817,
+    "p99_dep_delay": 42.70000000000002
+  },
+  {
+    "carrier": "WN",
+    "airport": "DAL",
+    "period": "2023-01",
+    "scheduled_n": 5823,
+    "disrupted_n": 1471,
+    "cancelled_n": 310,
+    "unknown_n": 0,
+    "disruption_rate": 0.2526189249527735,
+    "mean_dep_delay": 12.245286439448876,
+    "p99_dep_delay": 177.70000000000073
+  },
+  {
+    "carrier": "DL",
+    "airport": "DAL",
+    "period": "2023-01",
+    "scheduled_n": 107,
+    "disrupted_n": 27,
+    "cancelled_n": 1,
+    "unknown_n": 0,
+    "disruption_rate": 0.2523364485981308,
+    "mean_dep_delay": 21.0,
+    "p99_dep_delay": 328.70000000000016
+  },
+  {
+    "carrier": "AS",
+    "airport": "DAL",
+    "period": "2023-01",
+    "scheduled_n": 56,
+    "disrupted_n": 13,
+    "cancelled_n": 3,
+    "unknown_n": 0,
+    "disruption_rate": 0.23214285714285715,
+    "mean_dep_delay": 2.358490566037736,
+    "p99_dep_delay": 77.27999999999997
+  },
+  {
+    "carrier": "WN",
+    "airport": "DEN",
+    "period": "2023-01",
+    "scheduled_n": 7263,
+    "disrupted_n": 2855,
+    "cancelled_n": 382,
+    "unknown_n": 0,
+    "disruption_rate": 0.3930882555417871,
+    "mean_dep_delay": 19.1609529343405,
+    "p99_dep_delay": 174.0
+  },
+  {
+    "carrier": "UA",
+    "airport": "DEN",
+    "period": "2023-01",
+    "scheduled_n": 7125,
+    "disrupted_n": 2078,
+    "cancelled_n": 41,
+    "unknown_n": 0,
+    "disruption_rate": 0.29164912280701755,
+    "mean_dep_delay": 19.284525320919734,
+    "p99_dep_delay": 212.0
+  },
+  {
+    "carrier": "OO",
+    "airport": "DEN",
+    "period": "2023-01",
+    "scheduled_n": 4198,
+    "disrupted_n": 1256,
+    "cancelled_n": 265,
+    "unknown_n": 0,
+    "disruption_rate": 0.2991900905192949,
+    "mean_dep_delay": 21.45863900834809,
+    "p99_dep_delay": 283.44000000000005
+  },
+  {
+    "carrier": "F9",
+    "airport": "DEN",
+    "period": "2023-01",
+    "scheduled_n": 1644,
+    "disrupted_n": 651,
+    "cancelled_n": 58,
+    "unknown_n": 0,
+    "disruption_rate": 0.395985401459854,
+    "mean_dep_delay": 22.49182389937107,
+    "p99_dep_delay": 218.5499999999995
+  },
+  {
+    "carrier": "DL",
+    "airport": "DEN",
+    "period": "2023-01",
+    "scheduled_n": 1006,
+    "disrupted_n": 287,
+    "cancelled_n": 14,
+    "unknown_n": 0,
+    "disruption_rate": 0.2852882703777336,
+    "mean_dep_delay": 20.869959677419356,
+    "p99_dep_delay": 295.0600000000011
+  },
+  {
+    "carrier": "AA",
+    "airport": "DEN",
+    "period": "2023-01",
+    "scheduled_n": 693,
+    "disrupted_n": 186,
+    "cancelled_n": 15,
+    "unknown_n": 0,
+    "disruption_rate": 0.2683982683982684,
+    "mean_dep_delay": 21.708823529411763,
+    "p99_dep_delay": 308.84000000000015
+  },
+  {
+    "carrier": "NK",
+    "airport": "DEN",
+    "period": "2023-01",
+    "scheduled_n": 223,
+    "disrupted_n": 58,
+    "cancelled_n": 7,
+    "unknown_n": 0,
+    "disruption_rate": 0.2600896860986547,
+    "mean_dep_delay": 20.199074074074073,
+    "p99_dep_delay": 447.599999999999
+  },
+  {
+    "carrier": "B6",
+    "airport": "DEN",
+    "period": "2023-01",
+    "scheduled_n": 153,
+    "disrupted_n": 58,
+    "cancelled_n": 4,
+    "unknown_n": 0,
+    "disruption_rate": 0.3790849673202614,
+    "mean_dep_delay": 27.335570469798657,
+    "p99_dep_delay": 281.52000000000027
+  },
+  {
+    "carrier": "AS",
+    "airport": "DEN",
+    "period": "2023-01",
+    "scheduled_n": 143,
+    "disrupted_n": 46,
+    "cancelled_n": 0,
+    "unknown_n": 0,
+    "disruption_rate": 0.32167832167832167,
+    "mean_dep_delay": 12.41958041958042,
+    "p99_dep_delay": 158.60000000000025
+  },
+  {
+    "carrier": "G4",
+    "airport": "DEN",
+    "period": "2023-01",
+    "scheduled_n": 12,
+    "disrupted_n": 6,
+    "cancelled_n": 0,
+    "unknown_n": 0,
+    "disruption_rate": 0.5,
+    "mean_dep_delay": 18.75,
+    "p99_dep_delay": 99.85000000000004
   }
 ]
 ```
@@ -1070,11 +1393,6 @@ Query: [`quality.sql`](../sql/analysis/quality.sql). Full result: [`eda.json`](e
   },
   {
     "kind": "rotation",
-    "reason": "scheduled_gap",
-    "n": 234082
-  },
-  {
-    "kind": "rotation",
     "reason": "actual_overlap",
     "n": 12
   },
@@ -1094,6 +1412,11 @@ Query: [`quality.sql`](../sql/analysis/quality.sql). Full result: [`eda.json`](e
     "n": 1160285
   },
   {
+    "kind": "rotation",
+    "reason": "scheduled_gap",
+    "n": 234082
+  },
+  {
     "kind": "weather_report",
     "reason": "FM-12",
     "n": 9295
@@ -1110,18 +1433,18 @@ Query: [`quality.sql`](../sql/analysis/quality.sql). Full result: [`eda.json`](e
   },
   {
     "kind": "weather_report",
-    "reason": "SOD  ",
-    "n": 2864
-  },
-  {
-    "kind": "weather_report",
-    "reason": "SOM  ",
-    "n": 52
-  },
-  {
-    "kind": "weather_report",
     "reason": "SY-MT",
     "n": 39
+  },
+  {
+    "kind": "weather_summary_excluded",
+    "reason": "SOM",
+    "n": 96
+  },
+  {
+    "kind": "weather_summary_excluded",
+    "reason": "SOD",
+    "n": 2920
   }
 ]
 ```

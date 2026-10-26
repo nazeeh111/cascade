@@ -48,6 +48,16 @@ models:
   - name: features
     description: One airport/hourly UTC cutoff forecasting following two-hour departure cohort. No realized future weather/tail/delay cause features.
 
+  - name: carrier_cohorts
+    description: One reporting-carrier/airport/January2023cohort, not a full-year ranking.
+    columns:
+      - name: carrier
+        data_tests:
+          - relationships: {arguments: {to: "ref('carriers')", field: carrier}}
+      - name: airport
+        data_tests:
+          - relationships: {arguments: {to: "ref('airports')", field: airport}}
+
 seeds:
   - name: airports
     description: One airport per IATA code. Coordinates/timezones from airportsdata; eight focal NOAA mappings reviewed separately.

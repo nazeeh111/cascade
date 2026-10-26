@@ -44,9 +44,12 @@ def download(url, target):
 
 def sqlstr(v): return "'"+str(v).replace("'","''")+"'"
 
-def atomic_json(path, value):
+def atomic_text(path,value):
     path=Path(path);part=path.with_suffix(path.suffix+'.part')
-    part.write_text(json.dumps(value,indent=2)+'\n');os.replace(part,path)
+    part.write_text(value);os.replace(part,path)
+
+def atomic_json(path, value):
+    atomic_text(path,json.dumps(value,indent=2)+'\n')
 
 def cached_partition(out, marker):
     if not out.exists() or not marker.exists():return None
@@ -104,7 +107,11 @@ def one_month(month, force=False):
         if metrics!=check: raise ValueError('Source/parquet reconciliation failed')
         promote_partition(part,out,marker)
         m={'source':'BTS Reporting Carrier On-Time Performance','url':url,'year':2023,'month':month,'scope':'WN, all domestic legs','archive_sha256':ziphash,'archive_bytes':zipbytes,'csv_sha256':sha(csvpath),'csv_bytes':csvpath.stat().st_size,'source_rows':source_n,'scoped_rows':metrics[0],'cancelled':metrics[1],'dep_delay_sum':metrics[2],'missing_dep_delay':metrics[3],'parquet_sha256':sha(out),'parquet_bytes':out.stat().st_size,'seconds':round(time.perf_counter()-started,3),'retrieved_at':__import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),'reconciled':True}
-        atomic_json(marker,m); con.close()
+        atomic_json(marker,m)
+        if month==1:
+            from .carrier_benchmark import write_from_connection
+            write_from_connection(con,m)
+        con.close()
         print(f'BTS {month:02d}: {source_n:,} source -> {metrics[0]:,} WN rows ({m["seconds"]}s)',flush=True)
         return m
 
@@ -133,6 +140,9 @@ def run(months=range(1,13),force=False):
     with cf.ThreadPoolExecutor(max_workers=3) as pool:
         futures=[pool.submit(one_month,x,force) if k=='bts' else pool.submit(one_weather,x,force) for k,x in jobs]
         results=[f.result() for f in futures]
+    if not (ROOT/'data/benchmarks/carrier_cohorts_2023_01.parquet').exists():
+        from .carrier_benchmark import run as benchmark
+        benchmark()
     manifest={'dataset':'CASCADE WN 2023 v1','sources':results,'ingest_wall_seconds':round(time.perf_counter()-start,3),'policy':'Immutable snapshots; rerun skips hash-verified partitions. --refresh atomically replaces a revised source partition. No unverified partial is promoted.'}
     atomic_json(ROOT/'data/source_manifest.json',manifest)
     return manifest

@@ -56,3 +56,17 @@ def test_calibration_bins_cover_every_boundary():
     assert sum(b['n'] for b in result['calibration_bins'])==11
     assert abs(result['calibration_mae']-.5)<1e-12
     assert metrics([0],[.6])['calibration_mae']==.6
+
+
+def test_prediction_bulk_write_preserves_types_and_prior_table_on_invalid_batch():
+    import duckdb
+    from datetime import datetime
+    from cascade.modeling import persist_predictions
+    c=duckdb.connect()
+    row=('DEN',datetime(2023,10,1,16),'tabular',.6,.5,12,'test','heldout')
+    persist_predictions(c,[row])
+    assert c.execute('select * from predictions').fetchone()==row
+    import pytest
+    with pytest.raises(ValueError):persist_predictions(c,[(*row[:3],float('nan'),*row[4:])])
+    with pytest.raises(ValueError):persist_predictions(c,[row,row])
+    assert c.execute('select * from predictions').fetchone()==row

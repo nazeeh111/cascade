@@ -13,12 +13,14 @@ import time
 
 import duckdb
 import numpy as np
+import pyarrow as pa
 from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import Ridge
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from threadpoolctl import threadpool_limits
+from .ingest import atomic_text
 
 BASE_FEATURES = ["sched_n_2h", "hour", "dow", "month", "lag_rate_2h", "lag_rate_6h", "observed_n_2h", "backlog_n", "temp_c", "wind_ms", "visibility_m", "weather_age_min"]
 MODELS = ["seasonal", "rolling", "tabular", "temporal_residual", "graph_residual"]
@@ -60,7 +62,7 @@ def availability_audit(rows):
     return {"rows_audited": len(rows), "future_feature_violations": 0,
             "allowed_features": BASE_FEATURES + ["airport_one_hot", "upstream_rate (graph only)"],
             "excluded": ["tail", "actual future assignments", "delay causes", "future actual weather", "target_n", "label_available_at"],
-            "availability_assumptions": ["Final reported schedule treated as known; BTS has no historical schedule snapshots.", "Actual departure events assumed available 15 minutes after departure; not verified operational feed latency.", "ISD observations assumed available 60 minutes after observation; archival corrections may differ from real-time feed.", "Cancellation publication times unavailable: cancellations enter labels only; backlog is unresolved scheduled departures, not known cancellations."]}
+            "availability_assumptions": ["Final reported schedule treated as known; BTS has no historical schedule snapshots.", "Gate-out events assumed available 15 minutes after their occurrence, including eventual cancellations; not verified operational feed latency.", "ISD observations assumed available 60 minutes after observation; archival corrections may differ from real-time feed.", "Cancellation publication times unavailable: cancellations enter labels only; backlog is unresolved scheduled departures, not known cancellations."]}
 
 
 def matrix(rows, airports):
@@ -207,6 +209,26 @@ def network_uncertainty(rows, temporal, graph):
             "caution": "Descriptive resampling interval for this carrier/year; not a guarantee under regime changes."}
 
 
+def persist_predictions(con,records):
+    """One Arrow-to-SQL transaction preserves prior predictions until the new batch validates."""
+    names=['airport','cutoff','model','prediction','target_rate','target_n','split','fold']
+    schema=pa.schema([('airport',pa.string()),('cutoff',pa.timestamp('us')),('model',pa.string()),('prediction',pa.float64()),('target_rate',pa.float64()),('target_n',pa.int32()),('split',pa.string()),('fold',pa.string())])
+    table=pa.Table.from_arrays([pa.array([r[i] for r in records],type=field.type) for i,field in enumerate(schema)],schema=schema)
+    con.register('__cascade_prediction_batch',table)
+    try:
+        invalid=con.execute("select count(*) from __cascade_prediction_batch where airport is null or cutoff is null or model is null or prediction is null or not isfinite(prediction) or prediction not between 0 and 1 or target_rate is null or not isfinite(target_rate) or target_rate not between 0 and 1 or target_n is null or target_n<1").fetchone()[0]
+        duplicates=con.execute('select count(*) from (select airport,cutoff,model,fold,count(*) n from __cascade_prediction_batch group by all having n<>1)').fetchone()[0]
+        if invalid or duplicates:raise ValueError('Invalid prediction batch; existing predictions preserved')
+        con.execute('begin')
+        try:
+            con.execute('create or replace table predictions as select * from __cascade_prediction_batch')
+            con.execute('commit')
+        except Exception:
+            con.execute('rollback');raise
+    finally:
+        con.unregister('__cascade_prediction_batch')
+
+
 def _run(db_path=Path("data/cascade.duckdb"), output_dir=Path("reports")):
     start = time.perf_counter()
     con = duckdb.connect(str(db_path))
@@ -265,8 +287,7 @@ def _run(db_path=Path("data/cascade.duckdb"), output_dir=Path("reports")):
                     fold_metrics[model]["denominator_sensitivity"][str(minimum)] = metrics(np.array(y)[mask],p[mask],np.array(w)[mask])
             prediction_records.extend((r["airport"], r["cutoff"], model, float(v), float(r["target_rate"]), int(r["target_n"]), split, fold) for r, v in zip(test, p))
         fold_reports.append({"fold": fold, "split": split, "fit_before": str(boundary), "evaluation_end_exclusive": str(end), "train_rows": len(train), "evaluation_rows": len(test), "max_training_label_available_at": str(max(r["label_available_at"] for r in train)), "out_of_time_residual_rows": residual_n, "models": fold_metrics})
-    con.execute("CREATE OR REPLACE TABLE predictions (airport VARCHAR, cutoff TIMESTAMP, model VARCHAR, prediction DOUBLE, target_rate DOUBLE, target_n INTEGER, split VARCHAR, fold VARCHAR)")
-    con.executemany("INSERT INTO predictions VALUES (?, ?, ?, ?, ?, ?, ?, ?)", prediction_records)
+    persist_predictions(con,prediction_records)
     heldout = next((f for f in fold_reports if f["split"] == "test"), None)
     graph_difference = None
     selected_model = "tabular"
@@ -282,18 +303,18 @@ def _run(db_path=Path("data/cascade.duckdb"), output_dir=Path("reports")):
               "selected_params": selected, "selected_model": selected_model, "selection_rule": "Lowest average August/September validation MAE; never selected using October-December labels",
               "tuning": evaluated_configs, "folds": fold_reports, "availability_audit": audit,
               "graph_contribution": {"comparison": "temporal_residual MAE minus graph_residual MAE, same tabular base and OOF residual rows", "heldout_mae_reduction": graph_difference, "uncertainty": graph_uncertainty, "interpretation": "Positive is an improvement; an observed negative result is retained. No claim of general superiority or significance."},
-              "runtime_seconds": time.perf_counter() - start,
+              "runtime_seconds": time.perf_counter() - start, "compute": {"numerical_workers":1,"prediction_persistence":"validated Arrow-to-SQL atomic transaction"},
               "limitations": ["One carrier and eight focal airports in 2023; excludes passenger, crew, maintenance and non-WN propagation.", "Overlapping 2h labels are serially dependent; point metrics are descriptive, without independence-based confidence claims.", "Final schedules, revised archival observations and assumed feed latencies limit deployment interpretation.", "Graph is a train-period scheduled-route adjacency and a linear temporal message residual, not observed future rotations or a large GNN.", "No severe-event probability is estimated: calibration is mean predicted versus mean observed disruption rate; severe recall uses a 0.5 rate threshold."]}
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "model_evaluation.json").write_text(json.dumps(report, indent=2, default=json_default, allow_nan=False) + "\n")
+    atomic_text(output_dir / "model_evaluation.json",json.dumps(report, indent=2, default=json_default, allow_nan=False) + "\n")
     con.close()
     print(f"Model report: {output_dir / 'model_evaluation.json'}", flush=True)
     return report
 
 
 def run(db_path=Path("data/cascade.duckdb"), output_dir=Path("reports")):
-    with threadpool_limits(limits=2):
+    with threadpool_limits(limits=1):
         return _run(db_path, output_dir)
 
 

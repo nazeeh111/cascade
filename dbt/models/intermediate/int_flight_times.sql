@@ -10,6 +10,7 @@ with local as (
  from local
 ), all_times as (
  select *, sched_dep + scheduled_elapsed_min * interval '1 minute' as sched_arr,
+    sched_dep+dep_delay*interval '1 minute' as observed_gate_out,
     case when not cancelled then sched_dep+dep_delay*interval '1 minute' end as actual_dep,
     case when not cancelled and not diverted then sched_dep+dep_delay*interval '1 minute'
        + actual_elapsed_min*interval '1 minute' end as actual_arr,
@@ -29,7 +30,7 @@ select *,
  case when sched_arr is not null and dest_tz is not null then
    (hour(timezone(dest_tz,timezone('UTC',sched_arr)))*60+minute(timezone(dest_tz,timezone('UTC',sched_arr))))
      <> ((arr_clock//100*60+arr_clock%100)%1440) else false end as scheduled_arr_clock_inconsistent,
- case when actual_dep is not null and actual_dep_clock is not null then
-   (hour(timezone(origin_tz,timezone('UTC',actual_dep)))*60+minute(timezone(origin_tz,timezone('UTC',actual_dep))))
+ case when observed_gate_out is not null and actual_dep_clock is not null then
+   (hour(timezone(origin_tz,timezone('UTC',observed_gate_out)))*60+minute(timezone(origin_tz,timezone('UTC',observed_gate_out))))
      <> ((actual_dep_clock//100*60+actual_dep_clock%100)%1440) else false end as actual_dep_clock_inconsistent
 from all_times

@@ -13,15 +13,15 @@ The warehouse computes substantive features in SQL. The Python modeling layer re
 | Input | Availability rule and limitation |
 | --- | --- |
 | Scheduled departures over the next two hours, local hour, weekday, month, airport | Final BTS schedules are assumed known. BTS does not supply the historical schedule snapshots needed to verify that assumption. |
-| Recent observed departure disruption rate, counts and unresolved scheduled backlog | Departure events become observable 15 minutes after the actual departure. This is an assumed feed latency, not a measured BTS real-time service. A backlog item is an unresolved scheduled flight; it does not assert a known cancellation. |
+| Recent observed departure disruption rate, counts and unresolved scheduled backlog | Gate-out events become observable 15 minutes after the actual departure. This is an assumed feed latency, not a measured BTS real-time service. A backlog item is an unresolved scheduled flight; it does not assert a known cancellation. |
 | Temperature, wind, visibility and observation age | Observation time plus an assumed 60-minute publication lag must be no later than cutoff. Archival revisions and true operational feed latency remain unknown. |
 | Upstream airport rates | Apply a fixed pre-July scheduled-route graph to other airports' cutoff-safe lagged observations. The graph model sees aggregated neighbor messages, not future aircraft assignments. |
 
 Realized future weather, target counts/outcomes, delay-cause fields, aircraft tails and future actual aircraft assignments never enter the feature matrix. Aircraft rotations are separately reconstructed for retrospective analysis and scenario topology.
 
-Cancellation announcement timestamps do not exist in this extract. Final cancellations enter the target but are not treated as a known contemporaneous feature. Missing actual departure or arrival delay is not filled with zero. The departure-rate model uses negative early-departure values only through the correct `>=15` comparison; early departures remain intact in the warehouse.
+Cancellation announcement timestamps do not exist in this extract. The 270 source flights that eventually cancelled after a recorded gate-out retain that gate-out as an observable event; the future cancellation flag cannot erase history. The separate completed-movement field remains null for cancelled flights. Final cancellations enter the target but are not treated as a known contemporaneous feature. Missing actual departure or arrival delay is not filled with zero. The departure-rate model uses negative early-departure values only through the correct `>=15` comparison; early departures remain intact in the warehouse.
 
-Labels mature no earlier than 14 hours after cutoff and later when a target departure is exceptionally late. Every fit requires `label_available_at < fit_boundary`. The 14-hour assumption makes ordinary cancellation cohorts usable only retrospectively; it is not a verified cancellation notification time.
+Labels mature no earlier than 14 hours after cutoff and later when a target gate-out is exceptionally late, including an eventual cancellation. Every fit requires `label_available_at < fit_boundary`. The 14-hour assumption makes ordinary cancellation cohorts usable only retrospectively; it is not a verified cancellation notification time.
 
 ## Evaluation protocol
 
@@ -39,7 +39,7 @@ The graph contribution is the paired difference between temporal-residual and gr
 
 MAE and RMSE are in fraction-of-departures units; multiply by 100 for percentage points. Both airport-hour MAE and departure-count-weighted MAE are reported. Severe-event recall and precision use an observed/predicted rate threshold of 0.5. Calibration compares mean predicted versus mean observed rate in ten bins; this is rate calibration, not binary event-probability calibration. Separate minimum-denominator sensitivities retain only cohorts with at least 5 or 10 scheduled departures.
 
-Fit/predict wall time is reported per model. Residual-model time includes its tabular fit and chronological out-of-time residual fits. These times overlap in work and must not be summed. Full ordered feature rows and implementation bytes are hashed into the model run identity. The full rerun regenerates predictions; the public demo reads those frozen predictions.
+The numerical model runtime uses one worker because local parallel coordination proved expensive; model configurations, seeds and evaluation are unchanged. Prediction persistence is one validated Arrow-to-SQL transaction that preserves the prior table until commit. Fit/predict wall time is reported per model. Residual-model time includes its tabular fit and chronological out-of-time residual fits. These times overlap in work and must not be summed. Full ordered feature rows and implementation bytes are hashed into the model run identity. The full rerun regenerates predictions; the public demo reads those frozen predictions.
 
 ## Recovery experiment
 
@@ -49,7 +49,7 @@ At 16:00 UTC on every held-out day, replay the remaining eight-hour schedule. Co
 
 A completed leg's departure delay is the maximum of a training-calibrated external-delay floor and a hard incoming-aircraft readiness floor after scheduled turnaround slack. A service can reduce only the external floor by at most 15 minutes; it cannot move a departure before its simulated inbound arrival plus the assumed turn. Positive delay never falls below zero. Arrival delay adds the training route's median en-route recovery. A 12-hour schedule lookback initializes inbound state. Actual arrivals seed state only after the 15-minute observation lag. For an in-flight inbound, a known departure delay plus training route recovery predicts arrival; otherwise training priors initialize it. Future actual arrivals and departures never seed the replay. Already observed departures cannot receive a service slot.
 
-Inherited readiness is enforced fully. The baseline external component is the training airport/local-hour 65th percentile after subtracting the bounded inherited component. Forecast-rate/training-rate shock scaling is clipped to `[0.25,3]`. Holding the two-hour forecast constant over the eight-hour scenario is a scenario assumption, not a claim of eight-hour forecast accuracy.
+Inherited readiness is enforced fully. Source-time inconsistencies are excluded from validated rotations and simulator calibration while remaining visible in the warehouse quality report. The baseline external component is the training airport/local-hour 65th percentile after subtracting the bounded inherited component. Forecast-rate/training-rate shock scaling is clipped to `[0.25,3]`. Holding the two-hour forecast constant over the eight-hour scenario is a scenario assumption, not a claim of eight-hour forecast accuracy.
 
 Baseline replay is checked against completed held-out flights, reporting flight count, MAE, RMSE, bias, correlation and delay-15 recall. Cancellations and diversions are excluded from delay-minute outcomes and reported separately; there is no claim to recover cancelled flights. The baseline error must be read alongside every resource comparison. Sensitivity varies assumed minimum turnaround over 25, 35 and 45 minutes and external-shock multiplier over 0.75, 1.0 and 1.25, while preserving hard aircraft readiness.
 

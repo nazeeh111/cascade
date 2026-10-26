@@ -20,3 +20,6 @@ data/history/
 !web/dist/**
 web/dist/qa-responsive.html
 dbt/.user.yml
+/dist/
+/dist-previous/
+/cascade-static-*/
