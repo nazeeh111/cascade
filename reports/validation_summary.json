@@ -6,10 +6,20 @@
   "limits": "This verifier covers file/data invariants. Public access, browser interaction and release provenance are independently verified in the release evidence; it does not infer them from file presence.",
   "python_tests": {
     "passed": 32,
-    "evidence": "Final local pytest; fresh public CI pending"
+    "evidence": "Final local pytest and fresh public GitHub CI"
   },
   "dbt_tests": {
     "full": 30,
     "quickstart": 30
+  },
+  "public_ci": {
+    "url": "https://github.com/nazeeh111/cascade/actions/runs/40401916903",
+    "commit": "847634e525e33b4e7d1ba61a96cdd0d9d4783b72",
+    "conclusion": "success",
+    "fresh_dependencies": true,
+    "portable_verifier_checks": 507,
+    "quickstart_flights": 109423,
+    "python_tests": 32,
+    "dbt_data_tests": 30
   }
 }

@@ -1,0 +1,82 @@
+{
+  "checked_at": "2026-10-26T21:13:26.225631+00:00",
+  "url": "https://cascade-flight-intelligence.nazeeh1.chatgpt.site/",
+  "unauthenticated": true,
+  "source_commit": "847634e525e33b4e7d1ba61a96cdd0d9d4783b72",
+  "assets": [
+    {
+      "path": "app.js",
+      "status": 200,
+      "url": "https://cascade-flight-intelligence.nazeeh1.chatgpt.site/app.js",
+      "source_sha256": "e7eac9ed13b5995f1c0fadcefe793f6b743d10444c875cef8ae666b3a7773835",
+      "response_sha256": "e7eac9ed13b5995f1c0fadcefe793f6b743d10444c875cef8ae666b3a7773835",
+      "source_bytes_match": true,
+      "hosting_cloudflare_script_injected": false
+    },
+    {
+      "path": "data/replay.json",
+      "status": 200,
+      "url": "https://cascade-flight-intelligence.nazeeh1.chatgpt.site/data/replay.json",
+      "source_sha256": "d599187dab280f95f82749a228a1f418fa47b56c23bca573464c17c4a4bb5559",
+      "response_sha256": "d599187dab280f95f82749a228a1f418fa47b56c23bca573464c17c4a4bb5559",
+      "source_bytes_match": true,
+      "hosting_cloudflare_script_injected": false
+    },
+    {
+      "path": "evidence/eda.html",
+      "status": 200,
+      "url": "https://cascade-flight-intelligence.nazeeh1.chatgpt.site/evidence/eda",
+      "source_sha256": "d6febd86c83e2a174a5bf50f04939460aadca4be9535b1f93c350c49fafc75c9",
+      "response_sha256": "6aaa050d6ab303b4b131ce34a246ac630c86fdff9d99ee70aa0eb786e4695e80",
+      "source_bytes_match": true,
+      "hosting_cloudflare_script_injected": true
+    },
+    {
+      "path": "evidence/model_evaluation.json",
+      "status": 200,
+      "url": "https://cascade-flight-intelligence.nazeeh1.chatgpt.site/evidence/model_evaluation.json",
+      "source_sha256": "cb9a1989d4d6a50a801f39f445fc4806bf6ceb579b6d3a269a49d4f0bd7d969d",
+      "response_sha256": "cb9a1989d4d6a50a801f39f445fc4806bf6ceb579b6d3a269a49d4f0bd7d969d",
+      "source_bytes_match": true,
+      "hosting_cloudflare_script_injected": false
+    },
+    {
+      "path": "evidence/query_benchmark.json",
+      "status": 200,
+      "url": "https://cascade-flight-intelligence.nazeeh1.chatgpt.site/evidence/query_benchmark.json",
+      "source_sha256": "a8fb60ddc4d60cf502bc0a2969beb714c5211350e22b66ca8f8632be86536aeb",
+      "response_sha256": "a8fb60ddc4d60cf502bc0a2969beb714c5211350e22b66ca8f8632be86536aeb",
+      "source_bytes_match": true,
+      "hosting_cloudflare_script_injected": false
+    },
+    {
+      "path": "evidence/scenarios.json",
+      "status": 200,
+      "url": "https://cascade-flight-intelligence.nazeeh1.chatgpt.site/evidence/scenarios.json",
+      "source_sha256": "89467c147cb683c359294f9bc8aad4de7309dbb842010ce372f59589d6f092fc",
+      "response_sha256": "89467c147cb683c359294f9bc8aad4de7309dbb842010ce372f59589d6f092fc",
+      "source_bytes_match": true,
+      "hosting_cloudflare_script_injected": false
+    },
+    {
+      "path": "index.html",
+      "status": 200,
+      "url": "https://cascade-flight-intelligence.nazeeh1.chatgpt.site/",
+      "source_sha256": "4cd6c23201b9f55ca470a59f76d2f0f96ea225b662fba1cc0c60191f0414b1dd",
+      "response_sha256": "947a8db028d4ef5a052f1997a172c0287e4c46e2b97f9c79f5e8b137b2c39e2d",
+      "source_bytes_match": true,
+      "hosting_cloudflare_script_injected": true
+    },
+    {
+      "path": "styles.css",
+      "status": 200,
+      "url": "https://cascade-flight-intelligence.nazeeh1.chatgpt.site/styles.css",
+      "source_sha256": "e73c735093b00fb6a235f749f08057b916d0419d70e611abe8fc7add6fdcf418",
+      "response_sha256": "e73c735093b00fb6a235f749f08057b916d0419d70e611abe8fc7add6fdcf418",
+      "source_bytes_match": true,
+      "hosting_cloudflare_script_injected": false
+    }
+  ],
+  "all_source_assets_match": true,
+  "html_note": "Host inserts one Cloudflare challenge script in HTML. Removing only that identified script yields the exact source bytes. JS, CSS and JSON match complete response bytes."
+}

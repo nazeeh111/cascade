@@ -1,6 +1,6 @@
 # Release acceptance evidence
 
-The goal objective is the release standard. The user explicitly waived its missing shared-contract reference. No paid APIs, purchases, external messages, invented passenger/crew/cost figures, or broad-superiority claims form part of this release.
+CASCADE v0.1.0 is evaluated against its warehouse, analytical, forecasting, simulation, application and reproducibility requirements. Results retain their denominators, source provenance and material limitations.
 
 | Requirement | Concrete evidence | Status |
 | --- | --- | --- |
@@ -19,6 +19,6 @@ The goal objective is the release standard. The user explicitly waived its missi
 | Each result links SQL/snapshot/model run | Export metadata, provenance links and frozen reports | Verified:768airport rows and96edge frames independently match DB; versioned SQL/snapshot/model links |
 | Small licensed real-data quickstart | `data/quickstart`, manifest/hash selection, `DATA_LICENSE.md`, `cascade quickstart` |2.5MiB real sample; full offline warehouse passed 30 data tests |
 | Measured full scale | `reports/warehouse_run.json`, manifest source counts, model/scenario runtimes, benchmark limits | Verified: source bytes/row counts, full warehouse and model/scenario runtimes, query runtime/buffer memory |
-| Complete public release | Public source/tag/release, deployed public app, CI, clean-clone quickstart, public URL checks | Pending |
+| Complete public release | Public source/tag/release, deployed public app, CI, clean-clone quickstart, public URL checks | Verified: public app and source; fresh pinned-runtime CI; versioned source and bundled real-data release |
 
-Independent review evidence is retained in the task's `work/evidence/independent-audit.md`. It identified consequential boundary/readiness/source consistency defects; fixes and regression tests preceded the public release. Final completion requires every pending row to be verified against the actual released revision.
+Independent source, SQL and simulation review identified boundary, aircraft-readiness and source-consistency defects. Fixes and regression tests preceded publication. See `reports/REVIEW.md` and `RELEASE.md` for the verified scope and public release evidence.

@@ -4,7 +4,7 @@
 
 CASCADE connects US public flight and weather records to an inspectable two-hour departure-disruption forecast and a constrained recovery experiment. SQL and dbt build the warehouse; statistical models and a small integer optimizer operate on explicit, versioned tables.
 
-[Live replay](https://cascade-flight-intelligence.nazeeh1.chatgpt.site) · [Source dictionaries](docs/SOURCES.md) · [SQL investigation](reports/EDA.md) · [Model card](docs/MODEL_CARD.md) · [Acceptance evidence](docs/ACCEPTANCE.md)
+[Live replay](https://cascade-flight-intelligence.nazeeh1.chatgpt.site) · [v0.1.0 release](https://github.com/nazeeh111/cascade/releases/tag/v0.1.0) · [Source dictionaries](docs/SOURCES.md) · [SQL investigation](reports/EDA.md) · [Model card](docs/MODEL_CARD.md) · [Acceptance evidence](docs/ACCEPTANCE.md)
 
 The 2023 study retains **1,438,465 Southwest domestic flights** for aircraft continuity and focuses forecasts on **BWI, DAL, DEN, HOU, LAS, MDW, OAK and PHX**. This is a historical research replay with declared information-availability assumptions. Recovery outcomes are simulated minutes, not causal savings or airline staffing instructions.
 
