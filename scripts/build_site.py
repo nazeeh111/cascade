@@ -6,6 +6,10 @@ import shutil
 import tempfile
 ROOT=Path(__file__).resolve().parents[1]
 source=ROOT/'web/dist'
+from version_web_assets import versioned_index
+index_source=(source/'index.html').read_text()
+if index_source != versioned_index(index_source):
+    raise ValueError('Browser asset fingerprints are stale. Run python scripts/version_web_assets.py')
 required=['index.html','app.js','styles.css','data/replay.json']
 for name in required:
     if not (source/name).is_file():raise FileNotFoundError(name)

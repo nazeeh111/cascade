@@ -19,3 +19,9 @@ Manrope and US Atlas geography are served locally; licenses and SHA-256 provenan
 Native buttons/selects, keyboard-selectable map nodes, visible focus rings, larger airport row targets, explicit mode labels, an unavailable state, reduced-motion support and responsive reflow are retained. The wide model comparison uses its own horizontal scroll area on small screens. Browser verification covers desktop and narrow/mobile layouts, actual day/airport/cutoff changes, final-outcome separation, scenario policies, missing rates and finding disclosures.
 
 Scientific data, model/scenario identities and generating SQL remain the v0.1.0 study. This refresh changes the interface and its geographic/typographic assets.
+
+## Interaction refinement
+
+The [interaction review](INTERACTION_REVIEW.md) records the complete replay, recovery, evidence and failure-state pass. Recovery selections now survive reload/history; playback retains keyboard focus; fixed budgets, empty intervals and midnight boundaries are explicit. Model names remain visible while narrow-screen metrics scroll. Secondary text uses #526b70, with measured contrast of 5.68:1 on white, 5.13:1 on paper and 4.78:1 on the pale green panel. This is a targeted contrast check, not a claim of a complete accessibility certification.
+
+Browser assets use SHA-256-derived query fingerprints. Run `python scripts/version_web_assets.py` after CSS/JS edits; the publication build checks that they match.

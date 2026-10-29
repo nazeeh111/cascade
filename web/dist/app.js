@@ -2,7 +2,7 @@
 'use strict';
 const $ = id => document.getElementById(id);
 const SVG_NS = 'http://www.w3.org/2000/svg';
-const state = { data: null, day: 0, frame: 0, airport: null, mode: 'forecast', timer: null, budget: null, policy: null };
+const state = { data: null, day: 0, frame: 0, airport: null, mode: 'forecast', timer: null, budget: null, policy: null, scenarioKey: null };
 const repo = 'https://github.com/nazeeh111/cascade';
 const number = value => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value)) ? Number(value) : null;
 const fmt = (value, decimals = 0) => number(value) === null ? '—' : Number(value).toLocaleString('en-US', { maximumFractionDigits: decimals, minimumFractionDigits: decimals });
@@ -32,22 +32,54 @@ function weightedRate(items, key) {
 function svgElement(tag, attrs = {}, text) { const el = document.createElementNS(SVG_NS, tag); for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value); if (text !== undefined) el.textContent = text; return el; }
 function link(id, url) { if (!url) return; $(id).href = safeUrl(url); $(id).target = '_blank'; $(id).rel = 'noopener noreferrer'; }
 function setText(id, value) { $(id).textContent = value ?? '—'; }
+function formatWindow(start, hours = 2) {
+  const from = utcDate(start); if (!from) return 'Time unavailable';
+  const to = new Date(from.getTime() + hours * 3600000);
+  const rollover = to.toISOString().slice(0, 10) !== from.toISOString().slice(0, 10) ? ' (next day)' : '';
+  return `${clock(from.toISOString())} → ${clock(to.toISOString())}${rollover} UTC`;
+}
+function localAirportTime(airport) {
+  try {
+    const date = utcDate(frame()?.cutoff); if (!date) return { time: 'Unavailable', date: '' };
+    return { time: new Intl.DateTimeFormat('en-US', { timeZone: airport.timezone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short' }).format(date), date: new Intl.DateTimeFormat('en-GB', { timeZone: airport.timezone, day: '2-digit', month: 'short' }).format(date) };
+  } catch { return { time: 'Unavailable', date: '' }; }
+}
+function captureControlFocus() {
+  const active = document.activeElement;
+  if (active?.classList.contains('airport-node')) return { surface: 'map', key: active.dataset.airport };
+  if (active?.classList.contains('airport-row')) return { surface: 'list', key: active.dataset.airport };
+  if (active?.classList.contains('policy-choice')) return { surface: 'policy', key: active.dataset.policy };
+  return null;
+}
+function restoreControlFocus(focus) {
+  if (!focus) return;
+  const [container, selector, field] = focus.surface === 'map' ? ['networkMap', '.airport-node', 'airport'] : focus.surface === 'list' ? ['airportList', '.airport-row', 'airport'] : ['scenarioTable', '.policy-choice', 'policy'];
+  [...$(container).querySelectorAll(selector)].find(control => control.dataset[field] === focus.key)?.focus({ preventScroll: true });
+}
+function readUrlState() {
+  const params = new URLSearchParams(location.search);
+  state.day = Math.max(0, state.data.days.findIndex(item => item.date === params.get('day')));
+  state.airport = airports().some(item => item.airport === params.get('airport')) ? params.get('airport') : (airports().some(item => item.airport === 'DEN') ? 'DEN' : airports()[0]?.airport);
+  state.mode = params.get('view') === 'outcome' ? 'outcome' : 'forecast';
+  state.budget = params.has('budget') ? number(params.get('budget')) : null;
+  state.policy = params.get('policy');
+  selectInitialFrame(params.get('cutoff'));
+}
 function updateQuery() {
-  const params = new URLSearchParams(); params.set('day', day()?.date || ''); params.set('cutoff', clock(frame()?.cutoff)); params.set('airport', state.airport || ''); if (state.mode !== 'forecast') params.set('view', state.mode);
+  const params = new URLSearchParams(); params.set('day', day()?.date || ''); params.set('cutoff', clock(frame()?.cutoff)); params.set('airport', state.airport || '');
+  if (state.mode !== 'forecast') params.set('view', state.mode);
+  if (state.budget !== null) params.set('budget', String(state.budget));
+  if (state.policy) params.set('policy', state.policy);
   history.replaceState(null, '', `${location.pathname}?${params}${location.hash}`);
 }
 function initialize(data) {
-  if (!data || !Array.isArray(data.airports) || !Array.isArray(data.days) || !data.days.length) throw new Error('The snapshot does not contain replay days and airport metadata.');
+  if (!data || !Array.isArray(data.airports) || !data.airports.length || !Array.isArray(data.days) || !data.days.length) throw new Error('The snapshot does not contain replay days and airport metadata.');
   data.days = data.days.filter(item => Array.isArray(item.frames) && item.frames.length);
   if (!data.days.length) throw new Error('The snapshot has no hourly frames to replay.');
   state.data = data;
-  const params = new URLSearchParams(location.search);
-  state.day = Math.max(0, data.days.findIndex(item => item.date === params.get('day')));
-  state.airport = airports().some(item => item.airport === params.get('airport')) ? params.get('airport') : (airports().some(item => item.airport === 'DEN') ? 'DEN' : airports()[0]?.airport);
-  state.mode = params.get('view') === 'outcome' ? 'outcome' : 'forecast';
+  readUrlState();
   $('daySelect').innerHTML = data.days.map((item, index) => `<option value="${index}">${escapeHtml(longDate(item.date))}</option>`).join('');
   $('daySelect').value = state.day;
-  selectInitialFrame(params.get('cutoff'));
   const meta = data.meta || {};
   link('repoLink', meta.repository_url || repo); link('footerRepo', meta.repository_url || repo);
   link('mapSql', meta.sql_url || `${repo}/blob/main/dbt/models/marts/features.sql`);
@@ -55,9 +87,15 @@ function initialize(data) {
   link('airportSql', meta.sql_url || `${repo}/blob/main/dbt/models/marts/features.sql`);
   link('modelSource', meta.model_url || `${repo}/blob/main/docs/MODEL_CARD.md`);
   link('scenarioSource', meta.scenario_url || `${repo}/blob/main/reports/scenarios.json`);
+  setText('daySelectionNote', meta.day_selection ? 'These are historical examples: two ordinary days and the two days with the highest final disruption rates. They were chosen after the fact for contrast, not used to tune the model.' : 'Historical examples. See the source analysis for the selection method.');
   renderFindings(); renderModels(); renderProvenance(); bindEvents();
   $('loadMessage').hidden = true; $('app').hidden = false; render();
-  if(location.hash){const initialHash=location.hash;const anchor=document.getElementById(decodeURIComponent(initialHash.slice(1)));const align=()=>{if(anchor&&location.hash===initialHash)anchor.scrollIntoView({block:'start',behavior:'instant'});};if(document.fonts?.ready)document.fonts.ready.then(align);else align();}
+  if (location.hash) {
+    const initialHash = location.hash; let anchor;
+    try { anchor = document.getElementById(decodeURIComponent(initialHash.slice(1))); } catch { anchor = null; }
+    const align = () => { if (anchor && location.hash === initialHash) anchor.scrollIntoView({ block: 'start', behavior: 'instant' }); };
+    if (document.fonts?.ready) document.fonts.ready.then(align); else align();
+  }
 }
 function selectInitialFrame(preferred) {
   const frames = day().frames;
@@ -69,7 +107,9 @@ function selectInitialFrame(preferred) {
 }
 function render() {
   if (!frame()) return;
-  const current = frame(), items = rows(), date = utcDate(current.cutoff);
+  const focus = captureControlFocus();
+  const current = frame(), items = rows();
+  $('workspace').dataset.view = state.mode;
   $('daySelect').value = state.day;
   setText('dayKind', day().label || (day().kind === 'stress' ? 'HIGH DISRUPTION' : 'ORDINARY DAY'));
   $('dayKind').classList.toggle('stress', day().kind === 'stress' || day().kind === 'severe');
@@ -84,13 +124,18 @@ function render() {
   setText('rateLabel', isForecast ? 'Forecast disruption' : 'Final disruption');
   setText('rateStat', pct(weightedRate(items, isForecast ? 'prediction' : 'target_rate'), 1));
   setText('backlogStat', fmt(sumAvailable(items.map(item => item.backlog ?? item.backlog_n))));
-  const end = date ? new Date(date.getTime() + 7200000) : null;
-  setText('horizonText', end ? `${clock(current.cutoff)} → ${clock(end.toISOString())} UTC` : 'Two hours after cutoff');
-  setText('mapBadge', isForecast ? 'CUTOFF AWARE' : 'RETROSPECTIVE'); $('mapBadge').classList.toggle('outcome', !isForecast);
+  setText('horizonText', formatWindow(current.cutoff));
+  setText('horizonInline', formatWindow(current.cutoff));
+  const totalScheduled = sumAvailable(items.map(scheduled));
+  $('intervalEmpty').hidden = totalScheduled !== 0;
+  const next = day().frames.findIndex((item, index) => index > state.frame && sumAvailable((item.airports || []).map(scheduled)) > 0);
+  $('nextScheduled').hidden = next < 0;
+  setText('viewExplanation', isForecast ? `Forecasts use information assumed available by ${clock(current.cutoff)} UTC. Final outcomes remain hidden.` : `Final outcomes were not known at ${clock(current.cutoff)} UTC. This is an after-the-fact comparison.`);
+  setText('mapBadge', isForecast ? 'FORECAST' : 'FINAL OUTCOMES'); $('mapBadge').classList.toggle('outcome', !isForecast);
   setText('mapNote', isForecast ? 'Color: predicted disruption in the next 2h. Node size: scheduled departure volume. Select an airport.' : 'Color: final disruption in the next 2h. Node size: scheduled volume. Outcomes were unknown at cutoff.');
   setText('airportListMetric', isForecast ? 'FORECAST' : 'FINAL OUTCOME');
   setText('replayContext',`Question: where is next-2h departure disruption concentrated? Denominator: ${fmt(sumAvailable(items.map(scheduled)))} scheduled WN departures at the eight focal airports. Finding: ${pct(weightedRate(items,isForecast?'prediction':'target_rate'),1)} ${isForecast?'predicted':'observed final'} disruption. Limit: final schedules and feed latencies are assumed; selected carrier/network only. Decision: compare rate with demand, then inspect the bounded recovery experiment.`);
-  renderMap(); renderTimeline(); renderAirport(); renderScenarios(); updateQuery();
+  renderMap(); renderTimeline(); renderAirport(); renderScenarios(); syncPlayback(); updateQuery(); restoreControlFocus(focus);
 }
 const project = (lon, lat) => [65 + (lon + 126) / 58 * 770, 365 - (lat - 25) / 24 * 300];
 function renderMap() {
@@ -127,7 +172,7 @@ function renderMap() {
     if (number(airport.lon) === null || number(airport.lat) === null) continue;
     const [x, y] = project(Number(airport.lon), Number(airport.lat)), row = rows().find(item => item.airport === airport.airport), value = rate(row), n = scheduled(row);
     const radius = 7 + Math.min(7, Math.sqrt(n || 0) * .9);
-    const g = svgElement('g', { class: `airport-node${state.airport === airport.airport ? ' selected' : ''}`, transform: `translate(${x},${y})`, role: 'button', tabindex: '0', 'aria-label': `${airport.airport}, ${airport.name}. ${state.mode === 'forecast' ? 'Forecast' : 'Final'} disruption ${pct(value)}. Select airport.`, 'aria-pressed': String(state.airport === airport.airport) });
+    const g = svgElement('g', { class: `airport-node${state.airport === airport.airport ? ' selected' : ''}`, transform: `translate(${x},${y})`, role: 'button', tabindex: '0', 'data-airport': airport.airport, 'aria-label': `${airport.airport}, ${airport.name}. ${state.mode === 'forecast' ? 'Forecast' : 'Final'} disruption ${value === null ? 'unavailable' : pct(value)}. Select airport.`, 'aria-pressed': String(state.airport === airport.airport) });
     g.append(svgElement('circle', { r: 25, class: 'hit-area' }));
     g.append(svgElement('circle', { r: radius + 9, class: 'outer', stroke: color(value) }));
     g.append(svgElement('circle', { r: radius + 4, class: 'node-ring' }));
@@ -143,11 +188,8 @@ function renderMap() {
   }
 }
 function selectAirport(code) {
-  const active = document.activeElement;
-  const focusedMap = active?.classList.contains('airport-node'), focusedList = active?.classList.contains('airport-row');
-  state.airport = code; renderMap(); renderAirport(); updateQuery();
-  if (focusedMap) $('networkMap').querySelector('.airport-node.selected')?.focus({ preventScroll: true });
-  else if (focusedList) $('airportList').querySelector('.airport-row.selected')?.focus({ preventScroll: true });
+  const focus = captureControlFocus(); if (focus && focus.surface !== 'policy') focus.key = code;
+  state.airport = code; renderMap(); renderAirport(); updateQuery(); restoreControlFocus(focus);
   setText('announcement', `${code} selected. ${state.mode === 'forecast' ? 'Forecast' : 'Final'} disruption ${pct(rate(selectedRow()))}.`);
 }
 function renderTimeline() {
@@ -188,15 +230,15 @@ function renderTimeline() {
 }
 function renderAirport() {
   const airport = selectedAirport(), row = selectedRow(); if (!airport) return;
-  setText('airportTitle', airport.airport); setText('airportName', airport.name); setText('airportTimezone', airport.timezone || 'UTC DISPLAY');
+  setText('airportTitle', airport.airport); setText('airportName', airport.name); const local = localAirportTime(airport); $('airportTimezone').innerHTML = `<span>Local time</span><strong>${escapeHtml(local.time)}</strong><small>${escapeHtml(local.date)}</small>`; $('airportTimezone').title = airport.timezone || 'Timezone unavailable';
   const value = rate(row), n = scheduled(row), observed = number(row?.observed_rate ?? row?.lag_rate_2h);
   const gaugePct = value === null ? 0 : Math.max(0, Math.min(100, value * 100));
-  $('airportDetail').innerHTML = `<div class="airport-detail"><div class="airport-gauge${value === null ? ' missing' : ''}" role="img" aria-label="${value === null ? 'Disruption rate unavailable' : escapeHtml(pct(value)) + (state.mode === 'forecast' ? ' forecast disruption' : ' final disruption')}" style="--gauge-color:${color(value)};--gauge-pct:${gaugePct}%"><strong class="airport-rate">${escapeHtml(pct(value))}</strong></div><div class="airport-detail-info"><strong>${value === null ? (state.mode === 'forecast' ? 'No forecast available' : 'No final outcome available') : (state.mode === 'forecast' ? 'Forecast next 2h' : 'Final outcome next 2h')}</strong>${escapeHtml(fmt(n))} scheduled departures<span class="detail-secondary">Recent observed: ${escapeHtml(pct(observed))}</span></div></div>`;
+  $('airportDetail').innerHTML = `<div class="airport-detail"><div class="airport-gauge${value === null ? ' missing' : ''}" role="img" aria-label="${value === null ? (n === 0 ? 'No scheduled departures in this two-hour window' : 'Disruption rate unavailable') : escapeHtml(pct(value)) + (state.mode === 'forecast' ? ' forecast disruption' : ' final disruption')}" style="--gauge-color:${color(value)};--gauge-pct:${gaugePct}%"><strong class="airport-rate">${escapeHtml(pct(value))}</strong></div><div class="airport-detail-info"><strong>${n === 0 ? 'No scheduled departures' : value === null ? (state.mode === 'forecast' ? 'No forecast available' : 'No final outcome available') : (state.mode === 'forecast' ? 'Forecast next 2h' : 'Final outcome next 2h')}</strong>${escapeHtml(fmt(n))} scheduled departures<span class="detail-secondary">Observed past 2h: ${escapeHtml(pct(observed))}</span></div></div>`;
   const ranked = airports().map(meta => ({ meta, row: rows().find(item => item.airport === meta.airport) })).sort((a, b) => (rate(b.row) ?? -1) - (rate(a.row) ?? -1));
-  $('airportList').innerHTML = ranked.map(({ meta, row: item }) => { const r = rate(item); return `<button class="airport-row${meta.airport === state.airport ? ' selected' : ''}" type="button" data-airport="${escapeHtml(meta.airport)}" aria-pressed="${meta.airport === state.airport}" aria-label="${escapeHtml(meta.airport)} ${escapeHtml(pct(r))} disruption"><span class="airport-code">${escapeHtml(meta.airport)}</span><span class="airport-bar"><i style="width:${Math.max(0, Math.min(100, (r || 0) * 100))}%;background:${color(r)}"></i></span><span class="airport-row-value">${escapeHtml(pct(r))}</span><span class="airport-row-arrow" aria-hidden="true">↗</span></button>`; }).join('');
+  $('airportList').innerHTML = ranked.map(({ meta, row: item }) => { const r = rate(item); return `<button class="airport-row${meta.airport === state.airport ? ' selected' : ''}" type="button" data-airport="${escapeHtml(meta.airport)}" aria-pressed="${meta.airport === state.airport}" aria-label="${escapeHtml(meta.airport)} ${r === null ? 'rate unavailable' : escapeHtml(pct(r)) + ' disruption'}"><span class="airport-code">${escapeHtml(meta.airport)}</span><span class="airport-bar"><i style="width:${Math.max(0, Math.min(100, (r || 0) * 100))}%;background:${color(r)}"></i></span><span class="airport-row-value">${escapeHtml(pct(r))}</span><span class="airport-row-arrow" aria-hidden="true">↗</span></button>`; }).join('');
   $('airportList').querySelectorAll('button').forEach(button => button.addEventListener('click', () => selectAirport(button.dataset.airport)));
   const weather = row?.weather || row || {}, age = number(weather.age_min ?? weather.weather_age_min), temp = number(weather.temp_c), wind = number(weather.wind_ms), visibility = number(weather.visibility_m);
-  $('weatherDetail').innerHTML = `<span class="tiny-label">LAST AVAILABLE WEATHER</span><div class="weather-grid"><div><strong>${temp === null ? '—' : `${fmt(temp, 1)}°C`}</strong><span>Temperature</span></div><div><strong>${wind === null ? '—' : `${fmt(wind, 1)} m/s`}</strong><span>Wind speed</span></div><div><strong>${visibility === null ? '—' : `${fmt(visibility / 1000, 1)} km`}</strong><span>Visibility</span></div></div><p class="weather-age">${age === null ? 'No eligible observation supplied for this cutoff.' : `Observation ${fmt(age)} min before cutoff; eligibility includes declared reporting latency.`}</p>`;
+  $('weatherDetail').innerHTML = `<span class="tiny-label">LAST AVAILABLE WEATHER</span><div class="weather-grid"><div><strong>${temp === null ? '—' : `${fmt(temp, 1)}°C`}</strong><span>Temperature</span></div><div><strong>${wind === null ? '—' : `${fmt(wind, 1)} m/s`}</strong><span>Wind speed</span></div><div><strong>${visibility === null ? '—' : `${fmt(visibility / 1000, 1)} km`}</strong><span>Visibility</span></div></div><p class="weather-age">${age === null ? 'No weather report was available by this cutoff.' : `Observation ${fmt(age)} min before cutoff; eligibility includes declared reporting latency.`}</p>`;
 }
 function scenarioRows() {
   const currentDay = day(); let all = currentDay.scenarios;
@@ -205,17 +247,27 @@ function scenarioRows() {
 }
 function policyName(policy) { return ({ none: 'No intervention', no_action: 'No intervention', baseline: 'No intervention', volume: 'Scheduled volume', volume_heuristic: 'Scheduled volume', backlog: 'Backlog first', backlog_heuristic: 'Backlog first', forecast: 'Forecast-aware optimizer', optimizer: 'Forecast-aware optimizer', forecast_aware: 'Forecast-aware optimizer', forecast_optimizer: 'Forecast-aware optimizer', random: 'Random allocation', uniform: 'Equal allocation' })[policy] || String(policy).replace(/_/g, ' ').replace(/\b\w/g, value => value.toUpperCase()); }
 function renderScenarios() {
+  const key = JSON.stringify([day().date, state.budget, state.policy]);
+  if (state.scenarioKey === key) return;
+  const focus = captureControlFocus();
   const all = scenarioRows(), budgets = [...new Set(all.map(item => item.budget))].sort((a, b) => a - b);
   if (!budgets.includes(state.budget)) state.budget = budgets.find(value => value > 0) ?? budgets[0] ?? null;
   $('budgetSelect').innerHTML = budgets.length ? budgets.map(value => `<option value="${value}">${value} ${value === 1 ? 'resource' : 'resources'}</option>`).join('') : '<option>No evaluated scenarios</option>';
   $('budgetSelect').value = state.budget; $('budgetSelect').disabled = !budgets.length;
+  const fixedBudget = budgets.length === 1;
+  $('budgetSelect').hidden = fixedBudget; $('budgetFixed').hidden = !fixedBudget;
+  $('budgetLabel').htmlFor = fixedBudget ? 'budgetFixed' : 'budgetSelect';
+  setText('budgetFixed', fixedBudget ? `${fmt(state.budget)} hypothetical teams` : '');
+  $('fixedBudgetNote').hidden = !fixedBudget;
+  setText('scenarioContext', `${longDate(day().date)} · Simulation at 16:00 UTC, independent of the replay cursor.`);
   const atBudget = all.filter(item => item.budget === state.budget), policies = [...new Set(atBudget.map(item => item.policy))];
   if (!policies.includes(state.policy)) state.policy = policies.find(policy => /forecast|optimizer/.test(policy)) || policies[0] || null;
   $('policySelect').innerHTML = policies.length ? policies.map(policy => `<option value="${escapeHtml(policy)}">${escapeHtml(policyName(policy))}</option>`).join('') : '<option>No evaluated strategies</option>';
   $('policySelect').value = state.policy; $('policySelect').disabled = !policies.length;
   const selected = atBudget.find(item => item.policy === state.policy);
+  state.scenarioKey = JSON.stringify([day().date, state.budget, state.policy]);
   if (!selected) {
-    setText('benefitStat', '—'); setText('benefitPercent', 'No evaluated scenario'); $('scenarioBars').innerHTML = ''; $('scenarioTable').innerHTML = '<tr><td colspan="3">No scenario exported for this day.</td></tr>'; $('allocations').innerHTML = '<p class="allocation-empty">No evaluated allocation.</p>'; setText('scenarioNote', 'Only evaluated, source-linked simulations appear here.'); return;
+    setText('benefitStat', '—'); setText('benefitPercent', 'No evaluated scenario'); $('scenarioBars').innerHTML = ''; $('scenarioTable').innerHTML = '<tr><td colspan="3">No scenario exported for this day.</td></tr>'; $('allocations').innerHTML = '<p class="allocation-empty">No evaluated allocation.</p>'; setText('scenarioContext', `${longDate(day().date)} · No evaluated simulation available.`); setText('scenarioNote', 'No evaluated simulation is available for this day. Choose another replay day.'); setText('resourceDescription', 'Only evaluated resource budgets appear here.'); restoreControlFocus(focus); return;
   }
   const baseline = selected.baseline_delay_min, scenario = selected.scenario_delay_min, benefit = selected.benefit_min ?? (baseline !== null && scenario !== null ? baseline - scenario : null);
   $('benefitStat').innerHTML = `${escapeHtml(fmt(benefit, 1))}<small> min</small>`;
@@ -223,14 +275,17 @@ function renderScenarios() {
   const maxDelay = Math.max(1, ...atBudget.flatMap(item => [item.baseline_delay_min || 0, item.scenario_delay_min || 0]));
   const bars = [{ name: 'No intervention', value: baseline, active: false }, { name: policyName(state.policy), value: scenario, active: true }];
   $('scenarioBars').innerHTML = bars.map(bar => `<div class="scenario-bar-row${bar.active ? ' active' : ''}"><span>${escapeHtml(bar.name)}</span><span class="scenario-bar-track"><i style="width:${bar.value === null ? 0 : Math.min(100, bar.value / maxDelay * 100)}%"></i></span><span class="scenario-bar-value">${escapeHtml(fmt(bar.value))}</span></div>`).join('');
-  $('scenarioTable').innerHTML = atBudget.map(item => { const reduction = item.benefit_min ?? (item.baseline_delay_min !== null && item.scenario_delay_min !== null ? item.baseline_delay_min - item.scenario_delay_min : null); return `<tr class="${item.policy === state.policy ? 'selected' : ''}"><td>${escapeHtml(policyName(item.policy))}</td><td>${escapeHtml(fmt(item.scenario_delay_min, 1))}</td><td>${escapeHtml(fmt(reduction, 1))} min</td></tr>`; }).join('');
+  $('scenarioTable').innerHTML = atBudget.map(item => { const reduction = item.benefit_min ?? (item.baseline_delay_min !== null && item.scenario_delay_min !== null ? item.baseline_delay_min - item.scenario_delay_min : null); return `<tr class="${item.policy === state.policy ? 'selected' : ''}"><td><button type="button" class="policy-choice" data-policy="${escapeHtml(item.policy)}" aria-pressed="${item.policy === state.policy}">${escapeHtml(policyName(item.policy))}</button></td><td>${escapeHtml(fmt(item.scenario_delay_min, 1))}</td><td>${escapeHtml(fmt(reduction, 1))} min</td></tr>`; }).join('');
+  const hasAllocation = selected.allocations !== undefined || selected.allocation !== undefined;
   let allocations = selected.allocations || selected.allocation || {};
   if (Array.isArray(allocations)) allocations = Object.fromEntries(allocations.map(item => [item.airport, item.resources ?? item.count ?? item.units]));
   const allocationEntries = Object.entries(allocations).filter(([, value]) => number(value) > 0);
-  $('allocations').innerHTML = allocationEntries.length ? allocationEntries.map(([airport, count]) => `<span class="allocation-chip">${escapeHtml(airport)} × ${escapeHtml(count)}</span>`).join('') : '<p class="allocation-empty">No airport-level allocation supplied.</p>';
+  $('allocations').innerHTML = allocationEntries.length ? allocationEntries.map(([airport, count]) => `<span class="allocation-chip">${escapeHtml(airport)} × ${escapeHtml(count)}</span>`).join('') : `<p class="allocation-empty">${hasAllocation ? 'No resources allocated for this strategy.' : 'No airport-level allocation supplied.'}</p>`;
   const cutoff = selected.cutoff ? ` Cutoff: ${clock(selected.cutoff)} UTC.` : '';
   setText('scenarioNote', selected.note || `Fixed replay day and assumptions; only the allocation changes.${cutoff} Resources cannot recover cancellations or supply missing operational constraints.`);
-  if (selected.resource_description) setText('resourceDescription', selected.resource_description);
+  setText('resourceDescription', selected.resource_description || 'A resource is a bounded hypothetical intervention; inspect the source assumptions.');
+  $('scenarioTable').querySelectorAll('.policy-choice').forEach(button => button.addEventListener('click', () => choosePolicy(button.dataset.policy)));
+  restoreControlFocus(focus);
 }
 function renderFindings() {
   const findings = state.data.findings || [];
@@ -251,22 +306,32 @@ function renderProvenance() {
   const items = state.data.provenance?.length ? state.data.provenance : [{ label: 'Source snapshots', url: meta.source_url || `${repo}/blob/main/data/manifest.json` }, { label: 'SQL warehouse', url: meta.sql_url || `${repo}/tree/main/dbt` }, { label: 'Model run', url: meta.model_url || `${repo}/blob/main/reports/model_evaluation.json` }, { label: 'Rebuild guide', url: `${repo}#reproduce` }];
   $('provenanceLinks').innerHTML = items.map(item => externalLink(item.url, item.label || item.name || 'Evidence')).join('');
 }
-function stopPlayback() { if (state.timer) clearInterval(state.timer); state.timer = null; document.body.classList.remove('playing'); $('playPause').innerHTML = '<span aria-hidden="true">▶</span>'; $('playPause').setAttribute('aria-label', 'Play hourly replay'); }
+function syncPlayback() {
+  const playing = state.timer !== null, last = state.frame >= day().frames.length - 1;
+  document.body.classList.toggle('playing', playing);
+  $('playPause').disabled = day().frames.length <= 1;
+  $('playPause').innerHTML = `<span aria-hidden="true">${playing ? 'Ⅱ' : '▶'}</span><span class="playback-label" aria-hidden="true">${playing ? 'Pause' : last ? 'Replay' : 'Play'}</span>`;
+  $('playPause').setAttribute('aria-label', playing ? 'Pause hourly replay' : last ? 'Replay from first cutoff' : 'Play hourly replay');
+}
+function stopPlayback() { if (state.timer !== null) clearInterval(state.timer); state.timer = null; if (day()) syncPlayback(); }
+function choosePolicy(policy) { stopPlayback(); state.policy = policy; renderScenarios(); updateQuery(); }
 function bindEvents() {
-  $('daySelect').addEventListener('change', event => { stopPlayback(); state.day = Number(event.target.value); state.budget = null; state.policy = null; selectInitialFrame(); render(); });
+  $('daySelect').addEventListener('change', event => { const preferred = clock(frame().cutoff); stopPlayback(); state.day = Number(event.target.value); selectInitialFrame(preferred); render(); });
   $('cutoffSlider').addEventListener('input', event => { stopPlayback(); state.frame = Number(event.target.value); render(); });
   $('stepBack').addEventListener('click', () => { stopPlayback(); state.frame = Math.max(0, state.frame - 1); render(); });
   $('stepNext').addEventListener('click', () => { stopPlayback(); state.frame = Math.min(day().frames.length - 1, state.frame + 1); render(); });
-  $('forecastMode').addEventListener('click', () => { state.mode = 'forecast'; render(); });
-  $('outcomeMode').addEventListener('click', () => { state.mode = 'outcome'; render(); });
-  $('budgetSelect').addEventListener('change', event => { state.budget = Number(event.target.value); renderScenarios(); });
-  $('policySelect').addEventListener('change', event => { state.policy = event.target.value; renderScenarios(); });
+  $('nextScheduled').addEventListener('click', () => { const index = day().frames.findIndex((item, i) => i > state.frame && sumAvailable((item.airports || []).map(scheduled)) > 0); if (index >= 0) { stopPlayback(); state.frame = index; render(); $('cutoffSlider').focus({ preventScroll: true }); } });
+  $('forecastMode').addEventListener('click', () => { stopPlayback(); state.mode = 'forecast'; render(); });
+  $('outcomeMode').addEventListener('click', () => { stopPlayback(); state.mode = 'outcome'; render(); });
+  $('budgetSelect').addEventListener('change', event => { stopPlayback(); state.budget = Number(event.target.value); renderScenarios(); updateQuery(); });
+  $('policySelect').addEventListener('change', event => choosePolicy(event.target.value));
   $('playPause').addEventListener('click', () => {
-    if (state.timer) { stopPlayback(); return; }
+    if (state.timer !== null) { stopPlayback(); return; }
     if (state.frame >= day().frames.length - 1) state.frame = 0;
-    document.body.classList.add('playing'); $('playPause').innerHTML = '<span aria-hidden="true">Ⅱ</span>'; $('playPause').setAttribute('aria-label', 'Pause hourly replay'); render();
-    state.timer = setInterval(() => { if (state.frame >= day().frames.length - 1) { stopPlayback(); return; } state.frame++; render(); }, 1200);
+    state.timer = setInterval(() => { state.frame = Math.min(day().frames.length - 1, state.frame + 1); if (state.frame >= day().frames.length - 1) stopPlayback(); render(); }, 1200);
+    render();
   });
+  window.addEventListener('popstate', () => { stopPlayback(); readUrlState(); render(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden) stopPlayback(); });
   window.addEventListener('pagehide', stopPlayback);
   let resizeFrame;
@@ -275,4 +340,9 @@ function bindEvents() {
   const observer = new IntersectionObserver(entries => { for (const entry of entries) { if (entry.isIntersecting) navigation.forEach(anchor => anchor.classList.toggle('nav-active', anchor.hash === `#${entry.target.id}`)); } }, { rootMargin: '-10% 0px -65% 0px' });
   ['workspace', 'recovery', 'evidence'].forEach(id => observer.observe($(id)));
 }
-fetch('data/replay.json', { cache: 'no-cache' }).then(response => { if (!response.ok) throw new Error(`Snapshot request returned HTTP ${response.status}.`); return response.json(); }).then(initialize).catch(error => { $('loadMessage').classList.add('error'); $('loadMessage').innerHTML = `<strong>The replay snapshot could not be loaded.</strong><br>${escapeHtml(error.message)}<br><small>Serve this folder over HTTP and ensure data/replay.json is present. ${externalLink(repo, 'Open the rebuild guide')}</small>`; });
+fetch('data/replay.json', { cache: 'no-cache' }).then(response => { if (!response.ok) throw new Error(`Snapshot request returned HTTP ${response.status}.`); return response.json(); }).then(initialize).catch(error => {
+  stopPlayback(); $('app').hidden = true; $('loadMessage').hidden = false;
+  $('loadMessage').classList.add('error'); $('loadMessage').setAttribute('role', 'alert');
+  $('loadMessage').innerHTML = `<span class="tiny-label">REPLAY UNAVAILABLE</span><h2>The historical snapshot could not be loaded.</h2><p>Try again, or open the source and rebuild guide.</p><div class="load-actions"><button type="button" id="retrySnapshot">Try again</button>${externalLink(repo, 'Open the source', 'text-link')}</div><details><summary>Technical details</summary><p>${escapeHtml(error.message)}</p></details>`;
+  $('retrySnapshot').addEventListener('click', () => location.reload());
+});
