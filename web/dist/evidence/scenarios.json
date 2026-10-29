@@ -1,6 +1,6 @@
 {
-  "run_id": "scenario-2023-3fe0a2e6fd1b",
-  "implementation_sha256": "42320d7d7dec40f2928d65dfd8b36a88522f3ea9640672cb05117014c2f9060a",
+  "run_id": "scenario-2023-343bb601ff25",
+  "implementation_sha256": "5366ed731f66c154fa59ecae847cabc133b7d2915ed5e9a4fe9658ac1c16eed5",
   "model_run_id": "model-2023-3285fe6404fb",
   "experiment": "Retrospective actual-tail topology, forecast-driven shocks, bounded hypothetical ground-recovery teams",
   "budget": 4,
@@ -13407,5 +13407,5 @@
     "Benefits are differences within this deterministic simulator, not estimated causal savings. Large baseline errors limit operational interpretation.",
     "Aircraft readiness is a hard timing floor, including under service. The sensitivity multiplier scales exogenous shocks only, never physical inbound availability."
   ],
-  "runtime_seconds": 131.74665241700131
+  "runtime_seconds": 325.31938829191495
 }
