@@ -147,14 +147,16 @@ def dict_rows(con, sql, params=None):
 
 def calibrate(con, cutoff="2023-10-01"):
     """Fit only completed flights mature before the locked test boundary."""
-    con.execute("""CREATE OR REPLACE TEMP VIEW sim_train AS
+    # Normalize before embedding: DuckDB cannot bind parameters in CREATE VIEW.
+    cutoff = datetime.fromisoformat(cutoff).isoformat()
+    con.execute(f"""CREATE OR REPLACE TEMP VIEW sim_train AS
         SELECT f.*, r.sched_gap_min, r.inbound_arr_delay,
                extract(hour FROM timezone(f.origin_tz, timezone('UTC', f.sched_dep)))::INTEGER AS local_hour
         FROM flights f LEFT JOIN rotations r ON r.to_flight_id=f.flight_id
         WHERE NOT f.cancelled AND NOT f.diverted AND f.dep_delay IS NOT NULL
           AND NOT f.arrival_inconsistent AND NOT f.scheduled_arr_clock_inconsistent AND NOT f.actual_dep_clock_inconsistent
-          AND f.actual_dep + INTERVAL '15 minutes' < TIMESTAMP '2023-10-01'
-          AND f.sched_dep < TIMESTAMP '2023-10-01' - INTERVAL '14 hours'
+          AND f.actual_dep + INTERVAL '15 minutes' < TIMESTAMP '{cutoff}'
+          AND f.sched_dep < TIMESTAMP '{cutoff}' - INTERVAL '14 hours'
     """)
     alpha = 1.0  # Hard aircraft readiness cannot be weakened by an association slope.
     rows = con.execute("""SELECT origin, local_hour,

@@ -84,3 +84,25 @@ def test_eventual_cancellation_does_not_erase_an_observed_gate_out():
     cutoff,rows=flights()
     rows[0].update(cancelled=True,actual_dep=None,observed_gate_out=cutoff-timedelta(minutes=20))
     assert '0' not in handled_flights(rows,{'A':1},cutoff)
+
+
+def test_calibration_uses_requested_training_boundary():
+    import duckdb
+    from cascade.simulation import calibrate
+
+    with duckdb.connect() as con:
+        con.execute("""CREATE TABLE flights (
+            flight_id VARCHAR, origin VARCHAR, dest VARCHAR, origin_tz VARCHAR,
+            sched_dep TIMESTAMP, actual_dep TIMESTAMP, dep_delay DOUBLE,
+            arr_delay DOUBLE, cancelled BOOLEAN, diverted BOOLEAN,
+            arrival_inconsistent BOOLEAN, scheduled_arr_clock_inconsistent BOOLEAN,
+            actual_dep_clock_inconsistent BOOLEAN)""")
+        con.execute("""CREATE TABLE rotations (
+            to_flight_id VARCHAR, sched_gap_min DOUBLE, inbound_arr_delay DOUBLE)""")
+        con.execute("""INSERT INTO flights VALUES
+            ('old','A','B','UTC','2023-06-20','2023-06-20',10,10,false,false,false,false,false),
+            ('later','A','B','UTC','2023-08-20','2023-08-20',100,100,false,false,false,false,false)""")
+        early = calibrate(con, cutoff="2023-07-01")
+        assert early[-1] == 1
+        assert early[1][('*', -1)] == 10
+        assert calibrate(con)[-1] == 2
