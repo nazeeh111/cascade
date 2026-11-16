@@ -86,6 +86,11 @@ A January eight-airport weather query compares range-join-plus-ranking with ASOF
 
 ## Recovery validation
 
+The current calibration API honors earlier UTC cutoffs for every fitted prior
+and rejects boundaries beyond the locked test period. See the
+[calibration date contract](docs/CALIBRATION.md). The study results below remain
+frozen outputs of the original implementation, not a rerun of this repair. To check the portable historical evidence against the locally preserved, pinned source bytes without overwriting a report, run `uv run cascade verify --historical-scenarios`. Its output states whether the current implementation matches; it does not validate the full database or certify current-source compatibility. Bare `cascade verify` remains strict and fails until the frozen scenarios match the current simulation source.
+
 The deterministic positive-delay baseline (early departures scored as zero, signed values preserved in the warehouse) was replayed on **178,864 completed flights across 92 held-out days**: MAE **11.29 min**, RMSE **25.44 min**, and bias **-4.92min**. Its delay15 recall was only **11.2%**. This underrepresentation of tail events materially limits operational interpretation.
 
 At a four-team hypothetical budget, mean daily simulated reduction was **22.6 min** for schedule-volume priority, **26.8 min** for backlog priority and **31.5 min** for the forecast-aware optimizer. These are internal simulator differences, not measured causal savings or an optimal real airline plan. All nine turnaround/shock sensitivities and day-level errors remain visible in [scenarios.json](reports/scenarios.json).

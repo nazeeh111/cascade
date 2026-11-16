@@ -6,8 +6,10 @@ from .ingest import ROOT
 def main():
     p=argparse.ArgumentParser(description='CASCADE: real-data SQL warehouse, forecasts and bounded recovery replay')
     sub=p.add_subparsers(dest='command',required=True)
-    for name in ['warehouse','eda','model','simulate','benchmark','export','package-sample','verify']:
+    for name in ['warehouse','eda','model','simulate','benchmark','export','package-sample']:
         sub.add_parser(name)
+    verify=sub.add_parser('verify')
+    verify.add_argument('--historical-scenarios',action='store_true',help='Verify frozen scenario evidence against the preserved historical source snapshot; does not verify current source compatibility')
     ing=sub.add_parser('ingest',help='Download/hash-verify public partitions; completed partitions resume')
     ing.add_argument('--refresh',action='store_true',help='Re-download sources, preserving corrected prior partition bytes in data/history')
     q=sub.add_parser('quickstart',help='Build/test warehouse from bundled real subset, without network downloads')
@@ -45,6 +47,6 @@ def main():
         elif step=='export':from .export import run
         elif step=='package-sample':from .quickstart import package as run
         elif step=='verify':from .verify import run
-        result=run(force=True) if step=='ingest' and getattr(args,'refresh',False) else run()
+        result=(run(historical_scenarios=True) if step=='verify' and getattr(args,'historical_scenarios',False) else run(force=True) if step=='ingest' and getattr(args,'refresh',False) else run())
         if isinstance(result,dict) and step not in ['eda','model','simulate','benchmark','package-sample','export']:print(json.dumps(result,indent=2,default=str))
 if __name__=='__main__':main()
