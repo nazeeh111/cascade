@@ -20,8 +20,11 @@ def main():
     if args.command=='serve':
         from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
         from functools import partial
-        print(f'CASCADE replay: http://127.0.0.1:{args.port}',flush=True)
-        ThreadingHTTPServer(('127.0.0.1',args.port),partial(SimpleHTTPRequestHandler,directory=str(ROOT/'web/dist'))).serve_forever();return
+        server=ThreadingHTTPServer(('127.0.0.1',args.port),partial(SimpleHTTPRequestHandler,directory=str(ROOT/'web/dist')))
+        print(f'CASCADE replay: http://127.0.0.1:{server.server_address[1]}',flush=True)
+        try:server.serve_forever()
+        finally:server.server_close()
+        return
     if args.command=='quickstart':
         from .warehouse import run
         manifest=json.loads((ROOT/'data/quickstart/manifest.json').read_text())
