@@ -1,0 +1,11 @@
+{
+  "input": "receipt.json",
+  "inputSHA256": "b0260781e3703aaa84d2a1c7962db2b1450aa0715395706a9c70fbb1181eccab",
+  "bars": {
+    "prediction": 0.30438871555208613,
+    "target_rate": 0.5357142857142857
+  },
+  "mapping": "width=track*rate; track=221phone/440desktop; shared zero-to100percent scale within each variant",
+  "timeMeaning": "No measured time axis. All clock labels explicitly UTC; later label remains after cutoff.",
+  "simulationMeaning": "Archived selected policy, rounded42.4639505937339minutes; not recomputed/causal."
+}

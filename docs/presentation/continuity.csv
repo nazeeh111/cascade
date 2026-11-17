@@ -1,0 +1,2 @@
+tail,airport,flight_date,inbound_origin,inbound_dest,inbound_scheduled_arrival_utc,inbound_actual_arrival_utc,outbound_flight,outbound_dest,outbound_scheduled_departure_utc,outbound_actual_departure_utc,sched_gap_min,actual_gap_min,inbound_arr_delay,outbound_dep_delay
+N748SW,SAN,2023-01-01,ELP,SAN,2023-01-01 19:15:00,2023-01-02 00:17:00,1265,SMF,2023-01-02 00:00:00,2023-01-02 00:54:00,285,37,302.0,54.0

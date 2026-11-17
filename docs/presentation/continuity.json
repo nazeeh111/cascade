@@ -1,0 +1,17 @@
+{
+  "tail": "N748SW",
+  "airport": "SAN",
+  "flight_date": "2023-01-01",
+  "inbound_origin": "ELP",
+  "inbound_dest": "SAN",
+  "inbound_scheduled_arrival_utc": "2023-01-01 19:15:00",
+  "inbound_actual_arrival_utc": "2023-01-02 00:17:00",
+  "outbound_flight": "1265",
+  "outbound_dest": "SMF",
+  "outbound_scheduled_departure_utc": "2023-01-02 00:00:00",
+  "outbound_actual_departure_utc": "2023-01-02 00:54:00",
+  "sched_gap_min": 285,
+  "actual_gap_min": 37,
+  "inbound_arr_delay": 302.0,
+  "outbound_dep_delay": 54.0
+}
