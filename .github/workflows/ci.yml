@@ -19,8 +19,8 @@ jobs:
         run: uv run pytest -q
       - name: Rebuild and test bundled real-data warehouse
         run: uv run cascade quickstart
-      - name: Verify frozen scientific evidence and snapshot hashes
-        run: uv run cascade verify
+      - name: Verify historical evidence and strict current-source refusal
+        run: uv run python scripts/check_verification_routes.py
       - name: Check browser source syntax
         run: node --check web/dist/app.js
       - name: Build supported static deployment package
