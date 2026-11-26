@@ -37,6 +37,10 @@ Open the printed loopback URL. Port 0 chooses an available local port; the CLI p
 
 ![Actual current Cascade workspace at the selected historical cutoff](docs/presentation/app-1440.png)
 
+## Calibration and retained evidence
+
+The current calibration API honors earlier UTC cutoffs for every fitted prior and rejects boundaries beyond the locked test period. See the [calibration date contract](docs/CALIBRATION.md). Archived study results remain frozen outputs of the original implementation. `uv run cascade verify --historical-scenarios` checks portable historical evidence against the locally preserved pinned source bytes without overwriting a report. Its output states whether the current implementation matches; it does not validate the full database or certify current-source compatibility. Bare `cascade verify` remains strict and fails until the frozen scenarios match the current simulation source.
+
 ## What this can establish
 
 The tabular model remains the validation-selected model, even though final-test residual comparisons differ. Archived recovery differences are simulator minutes, not causal savings or a real airline plan. Its held-out baseline late15 recall was only 11.2%; actual-tail topology uses hindsight. Crew legality, passengers, gates, maintenance and airspace constraints are missing. No new model fit, simulator study or physical operation was performed for this presentation.

@@ -1,11 +1,50 @@
 """Audit frozen evidence, quickstart bytes and (when present) the full warehouse."""
 from datetime import datetime
-import hashlib,json
+import hashlib,json,os,stat
 from pathlib import Path
 import duckdb
 from .ingest import ROOT,sha
 
-def run():
+# This identity was admitted from the locally inspected pinned Git tree. The
+# snapshot is data only; never import or execute it.
+_HISTORICAL_SIZE = 20922
+_HISTORICAL_SHA256 = '42320d7d7dec40f2928d65dfd8b36a88522f3ea9640672cb05117014c2f9060a'
+_HISTORICAL_GIT_BLOB = '57dfb6192b9e4e85d295d21eba8a74e1d4b78686'
+
+def _historical_fingerprint():
+    # Open once without following a final symlink; check type, size and identity
+    # on the bytes captured from that descriptor, not a separately reopened path.
+    flags = os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0)
+    if not hasattr(os, 'O_NOFOLLOW'):
+        raise RuntimeError('historical snapshot verification requires O_NOFOLLOW')
+    directory_flags = flags | os.O_DIRECTORY
+    root_fd = os.open(ROOT, directory_flags)
+    evidence_fd = history_fd = None
+    try:
+        evidence_fd = os.open('evidence', directory_flags, dir_fd=root_fd)
+        history_fd = os.open('historical', directory_flags, dir_fd=evidence_fd)
+        fd = os.open('simulation.py.txt', flags, dir_fd=history_fd)
+    finally:
+        if history_fd is not None: os.close(history_fd)
+        if evidence_fd is not None: os.close(evidence_fd)
+        os.close(root_fd)
+    try:
+        meta = os.fstat(fd)
+        if not stat.S_ISREG(meta.st_mode) or meta.st_size != _HISTORICAL_SIZE:
+            raise ValueError('historical snapshot must be the bounded regular file')
+        with os.fdopen(fd, 'rb', closefd=False) as source:
+            data = source.read(_HISTORICAL_SIZE + 1)
+        if len(data) != _HISTORICAL_SIZE:
+            raise ValueError('historical snapshot size changed')
+        digest = hashlib.sha256(data).hexdigest()
+        blob = hashlib.sha1(f'blob {len(data)}\0'.encode() + data).hexdigest()
+        if digest != _HISTORICAL_SHA256 or blob != _HISTORICAL_GIT_BLOB:
+            raise ValueError('historical snapshot identity mismatch')
+        return digest
+    finally:
+        os.close(fd)
+
+def run(*, historical_scenarios=False):
     checks=[]
     def check(name,value,detail=None):
         checks.append({'check':name,'passed':bool(value),'detail':detail})
@@ -24,7 +63,9 @@ def run():
             check('calibration_complete:'+fold['fold']+':'+name,sum(b['n'] for b in m['calibration_bins'])==m['n'])
     check('source_snapshot_links',replay['meta']['source_snapshot']==sha(ROOT/'data/source_manifest.json'))
     check('model_code_fingerprint',model['implementation_sha256']==sha(ROOT/'cascade/modeling.py'))
-    check('scenario_code_fingerprint',sim['implementation_sha256']==sha(ROOT/'cascade/simulation.py'))
+    current_scenario_compatible = sim['implementation_sha256']==sha(ROOT/'cascade/simulation.py')
+    scenario_fingerprint = _historical_fingerprint() if historical_scenarios else sha(ROOT/'cascade/simulation.py')
+    check('scenario_code_fingerprint',sim['implementation_sha256']==scenario_fingerprint)
     check('consistent_model_identity',model['run_id']==sim['model_run_id']==replay['meta']['model_run'])
     check('heldout_replay_days',sim['baseline_replay']['heldout_days']==92)
     check('physical_and_resource_invariants',all(sim['invariants'][x]==0 for x in ['budget_exceeded','negative_simulated_departure_delay','resource_increases_delay','aircraft_readiness_violations']) and sim['invariants']['aircraft_readiness_checks']>0)
@@ -38,7 +79,7 @@ def run():
     check('benchmark_has_runtime_memory_explain',all(len(v['seconds'])==3 and v['max_peak_buffer_memory_bytes']>0 for v in bench['queries'].values()) and all((ROOT/f'reports/query_{n}_explain.txt').exists() for n in bench['queries']))
     db=ROOT/'data/cascade.duckdb'
     database_checked=False
-    if db.exists():
+    if db.exists() and not historical_scenarios:
         database_checked=True;c=duckdb.connect(str(db),read_only=True)
         from .modeling import load_rows,json_default
         fingerprint=hashlib.sha256()
@@ -68,6 +109,12 @@ def run():
                     check('export_matches_prediction:'+a['airport']+':'+f['cutoff'],(value[0] if value else None)==a['prediction'])
         c.close()
     report={'verified_at':datetime.now(__import__('datetime').timezone.utc).isoformat(),'passed':True,'checks':checks,'check_count':len(checks),'full_database_checked':database_checked,'limits':'This verifier covers file/data invariants. Public access, browser interaction and release provenance are independently verified in the release evidence; it does not infer them from file presence.'}
+    if historical_scenarios:
+        # Historical evidence verification never overwrites a published report.
+        return {'passed':True,'scope':'historical_scenarios_only','checks':len(checks),
+                'current_source_compatible':current_scenario_compatible,
+                'full_database_checked':False,
+                'limits':'Frozen scenario source snapshot and portable evidence only; current source is checked separately. No full database or new study was run.'}
     (ROOT/'reports/verification.json').write_text(json.dumps(report,indent=2)+'\n')
     return {'passed':True,'checks':len(checks),'full_database_checked':database_checked}
 if __name__=='__main__':print(json.dumps(run(),indent=2))

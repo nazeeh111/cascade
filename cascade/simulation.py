@@ -5,7 +5,7 @@ only model forecasts, schedules and training route weights, never future delays.
 """
 from __future__ import annotations
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import json
 import hashlib
@@ -146,15 +146,37 @@ def dict_rows(con, sql, params=None):
 
 
 def calibrate(con, cutoff="2023-10-01"):
-    """Fit only completed flights mature before the locked test boundary."""
-    con.execute("""CREATE OR REPLACE TEMP VIEW sim_train AS
+    """Fit priors strictly before a UTC cutoff in (2023-01-01, 2023-10-01].
+
+    The 15-minute event latency and 14-hour schedule buffer both apply.
+    Route degree uses schedules before min(cutoff, 2023-07-01), preserving the
+    frozen study's pre-July scope. Later cutoffs would admit locked holdouts.
+    """
+    try:
+        boundary = datetime.fromisoformat(cutoff)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("cutoff must be an ISO date or datetime") from exc
+    if boundary.tzinfo is not None:
+        boundary = boundary.astimezone(timezone.utc).replace(tzinfo=None)
+    if not datetime(2023, 1, 1) < boundary <= datetime(2023, 10, 1):
+        raise ValueError("cutoff must be after 2023-01-01 and at or before 2023-10-01 UTC")
+    # CREATE VIEW cannot bind parameters; only the normalized timestamp is embedded.
+    cutoff = boundary.isoformat()
+    con.execute(f"""CREATE OR REPLACE TEMP VIEW sim_train AS
         SELECT f.*, r.sched_gap_min, r.inbound_arr_delay,
-               extract(hour FROM timezone(f.origin_tz, timezone('UTC', f.sched_dep)))::INTEGER AS local_hour
-        FROM flights f LEFT JOIN rotations r ON r.to_flight_id=f.flight_id
+                extract(hour FROM timezone(f.origin_tz, timezone('UTC', f.sched_dep)))::INTEGER AS local_hour
+        FROM flights f
+        LEFT JOIN (SELECT *, count(*) OVER (PARTITION BY to_flight_id) AS rotation_count
+                   FROM rotations) r ON r.to_flight_id=f.flight_id
+        LEFT JOIN (SELECT flight_id, count(*) AS inbound_count, max(actual_arr) AS inbound_actual_arr
+                   FROM flights GROUP BY flight_id) p ON p.flight_id=r.from_flight_id
         WHERE NOT f.cancelled AND NOT f.diverted AND f.dep_delay IS NOT NULL
           AND NOT f.arrival_inconsistent AND NOT f.scheduled_arr_clock_inconsistent AND NOT f.actual_dep_clock_inconsistent
-          AND f.actual_dep + INTERVAL '15 minutes' < TIMESTAMP '2023-10-01'
-          AND f.sched_dep < TIMESTAMP '2023-10-01' - INTERVAL '14 hours'
+          AND f.actual_dep + INTERVAL '15 minutes' < TIMESTAMP '{cutoff}'
+          AND f.actual_arr + INTERVAL '15 minutes' < TIMESTAMP '{cutoff}'
+          AND f.sched_dep < TIMESTAMP '{cutoff}' - INTERVAL '14 hours'
+          AND (r.to_flight_id IS NULL OR (r.rotation_count=1 AND p.inbound_count=1
+               AND p.inbound_actual_arr + INTERVAL '15 minutes' < TIMESTAMP '{cutoff}'))
     """)
     alpha = 1.0  # Hard aircraft readiness cannot be weakened by an association slope.
     rows = con.execute("""SELECT origin, local_hour,
@@ -164,9 +186,10 @@ def calibrate(con, cutoff="2023-10-01"):
     recovery = {(a or "*", b or "*"): float(v or 0.) for a, b, v in con.execute("""SELECT origin,dest,median(arr_delay-dep_delay)
         FROM sim_train WHERE arr_delay IS NOT NULL GROUP BY GROUPING SETS ((origin,dest),())""").fetchall()}
     rates = dict(con.execute("SELECT origin,avg((dep_delay>=15)::INTEGER)::DOUBLE FROM sim_train GROUP BY origin").fetchall())
-    # Route-degree multiplier is computed only from pre-test schedules.
+    # This prior keeps the study's narrower pre-July scope at later cutoffs.
     degrees = dict(con.execute("""SELECT origin, count(DISTINCT dest)::DOUBLE FROM flights
-        WHERE sched_dep < TIMESTAMP '2023-07-01' GROUP BY origin""").fetchall())
+        WHERE sched_dep < ? GROUP BY origin""",
+        [min(boundary, datetime(2023, 7, 1))]).fetchall())
     maxdegree = max(degrees.values(), default=1.)
     degrees = {a: 1. + v / maxdegree for a, v in degrees.items()}
     train_n = con.execute("SELECT count(*) FROM sim_train").fetchone()[0]

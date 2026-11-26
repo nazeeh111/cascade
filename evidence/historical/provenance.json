@@ -1,0 +1,8 @@
+{
+  "commit": "6ea2e84013c9f68a66019c6cd67b1f25a0e3c98c",
+  "path": "cascade/simulation.py",
+  "git_blob_sha1": "57dfb6192b9e4e85d295d21eba8a74e1d4b78686",
+  "sha256": "42320d7d7dec40f2928d65dfd8b36a88522f3ea9640672cb05117014c2f9060a",
+  "bytes": 20922,
+  "note": "Locally compared with the pinned Git tree and blob before capture; hashes establish byte identity, not publisher authentication."
+}
