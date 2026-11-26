@@ -75,11 +75,19 @@ def gate_out_observable(flight,cutoff):
     return event is not None and event+timedelta(minutes=15)<=cutoff
 
 
+def service_eligible(flight, cutoff):
+    """Apply the same departure window to capacity and service assignment."""
+    return (
+        cutoff <= flight["sched_dep"] < cutoff + timedelta(hours=2)
+        and not gate_out_observable(flight, cutoff)
+    )
+
+
 def handled_flights(flights, allocation, cutoff):
     """Serve the first scheduled legs; unknown cancellations consume a slot too."""
     eligible = defaultdict(list)
     for f in flights:
-        if cutoff <= f["sched_dep"] < cutoff + timedelta(hours=2) and not gate_out_observable(f,cutoff):
+        if service_eligible(f, cutoff):
             eligible[f["origin"]].append(f)
     handled = set()
     for a, teams in allocation.items():
@@ -230,7 +238,7 @@ def run(db_path=Path("data/cascade.duckdb"), output_dir=Path("reports")):
         forecast = dict(con.execute("SELECT airport,prediction FROM predictions WHERE model=? AND cutoff=? AND split='test'", [selected_model,cutoff]).fetchall())
         # If midnight-UTC schedule is empty at a focal airport, train prior supplies a declared fallback.
         forecast = {a: float(forecast.get(a, rates.get(a, .2))) for a in focal}
-        counts = {a: sum(f["origin"] == a and cutoff <= f["sched_dep"] < cutoff + timedelta(hours=2) and not gate_out_observable(f,cutoff) for f in flights) for a in focal}
+        counts = {a: sum(f["origin"] == a and service_eligible(f, cutoff) for f in flights) for a in focal}
         capacity = {a: min(MAX_TEAMS_PER_AIRPORT, math.ceil(counts[a] / FLIGHTS_PER_TEAM)) for a in focal}
         # Fixed forecast-driven shock scaling, clipped to prevent extrapolation explosions.
         scales = {a: min(3., max(.25, forecast[a] / max(.05, rates.get(a, .2)))) for a in focal}

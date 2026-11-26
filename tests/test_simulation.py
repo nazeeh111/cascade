@@ -84,3 +84,22 @@ def test_eventual_cancellation_does_not_erase_an_observed_gate_out():
     cutoff,rows=flights()
     rows[0].update(cancelled=True,actual_dep=None,observed_gate_out=cutoff-timedelta(minutes=20))
     assert '0' not in handled_flights(rows,{'A':1},cutoff)
+
+
+def test_service_window_and_gate_out_availability_boundaries():
+    cutoff, _ = flights()
+    minute = timedelta(minutes=1)
+    horizon = cutoff + timedelta(hours=2)
+    rows = [
+        {"flight_id": "before-cutoff", "origin": "A", "sched_dep": cutoff - minute},
+        {"flight_id": "at-cutoff", "origin": "A", "sched_dep": cutoff},
+        {"flight_id": "known-at-cutoff", "origin": "A", "sched_dep": cutoff,
+         "observed_gate_out": cutoff - 15 * minute},
+        {"flight_id": "known-after-cutoff", "origin": "A", "sched_dep": cutoff,
+         "observed_gate_out": cutoff - 14 * minute},
+        {"flight_id": "before-horizon", "origin": "A", "sched_dep": horizon - minute},
+        {"flight_id": "at-horizon", "origin": "A", "sched_dep": horizon},
+    ]
+    assert handled_flights(rows, {"A": 3}, cutoff) == {
+        "at-cutoff", "known-after-cutoff", "before-horizon",
+    }
